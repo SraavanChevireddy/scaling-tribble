@@ -2,7 +2,15 @@ import { useState } from 'react'
 
 const Sidebar = ({ sidebarCollapsed, setSidebarCollapsed, widgetActions }) => {
   const [searchTerm, setSearchTerm] = useState('')
-  const { addNewRectangle, addNewChart, addNewFunnel, addNewMetric } = widgetActions
+  const { 
+    addNewRectangle, 
+    addNewChart, 
+    addNewFunnel, 
+    addNewMetric,
+    addNewApiMetric,
+    addNewApiChart,
+    addNewApiFunnel
+  } = widgetActions
 
   const widgetOptions = [
     {
@@ -61,6 +69,53 @@ const Sidebar = ({ sidebarCollapsed, setSidebarCollapsed, widgetActions }) => {
         </svg>
       ),
       iconClass: 'funnel-icon'
+    },
+    // API-powered widgets
+    {
+      id: 'api-metric',
+      title: 'Live Metrics',
+      subtitle: 'Real-time KPI',
+      keywords: ['api', 'live', 'real-time', 'metric', 'kpi', 'data', 'waiver'],
+      action: () => addNewApiMetric('1x1', 'totalWaivers'),
+      icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M3 12l2-2 4 4 6-6 6 2v6H3v-4z" fill="currentColor" opacity="0.2"/>
+          <path d="M3 12l2-2 4 4 6-6 6 2" stroke="currentColor" strokeWidth="2" fill="none"/>
+          <circle cx="21" cy="5" r="3" fill="#10b981" stroke="white" strokeWidth="2"/>
+        </svg>
+      ),
+      iconClass: 'metric-icon api-icon'
+    },
+    {
+      id: 'api-chart',
+      title: 'Live Chart',
+      subtitle: 'Real-time Data',
+      keywords: ['api', 'live', 'real-time', 'chart', 'bar', 'data', 'trends'],
+      action: () => addNewApiChart('monthly'),
+      icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2"/>
+          <rect x="7" y="13" width="2" height="5" fill="currentColor"/>
+          <rect x="11" y="9" width="2" height="9" fill="currentColor"/>
+          <rect x="15" y="6" width="2" height="12" fill="currentColor"/>
+          <circle cx="19" cy="7" r="2" fill="#10b981" stroke="white" strokeWidth="1"/>
+        </svg>
+      ),
+      iconClass: 'chart-icon api-icon'
+    },
+    {
+      id: 'api-funnel',
+      title: 'Live Waivers ⚡',
+      subtitle: 'Real-time Flow',
+      keywords: ['api', 'live', 'real-time', 'funnel', 'waiver', 'expiring', 'flow'],
+      action: addNewApiFunnel,
+      icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M6 3h12l-2 4H8l-2-4zM8 7h8l-1.5 3H9.5L8 7zM9.5 10h5l-1 2h-3l-1-2zM10.5 12h3l-0.5 1h-2l-0.5-1z" fill="currentColor"/>
+          <circle cx="20" cy="6" r="2" fill="#10b981" stroke="white" strokeWidth="1"/>
+        </svg>
+      ),
+      iconClass: 'funnel-icon api-icon'
     }
   ]
 

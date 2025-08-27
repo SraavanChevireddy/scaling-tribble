@@ -343,6 +343,138 @@ export const useWidgetManagement = () => {
     }, 100)
   }, [rectangles, findNextGridPosition])
 
+  // API-powered widget creation functions
+  const addNewApiMetric = useCallback((metricSize = '1x1', metricType = 'totalWaivers') => {
+    const newId = Math.max(...rectangles.map(r => r.id), 0) + 1
+    const size = WIDGET_SIZES[metricSize]
+    const position = findNextGridPosition(size.cols, size.rows, rectangles)
+    
+    const newMetric = {
+      id: newId,
+      x: position.x,
+      y: position.y,
+      width: size.width,
+      height: size.height,
+      gridCols: size.cols,
+      gridRows: size.rows,
+      color: '#ffffff',
+      isDragging: false,
+      isResizing: false,
+      size: metricSize,
+      type: 'api-metric',
+      metricType: metricType,
+      isNew: true,
+      isApiPowered: true
+    }
+    
+    setRectangles(prev => [...prev, newMetric])
+    
+    setTimeout(() => {
+      setRectangles(prev => prev.map(r => 
+        r.id === newId ? { ...r, isNew: false } : r
+      ))
+    }, 500)
+    
+    setTimeout(() => {
+      if (canvasRef.current) {
+        const targetY = position.y - 100
+        canvasRef.current.scrollTo({
+          top: Math.max(0, targetY),
+          behavior: 'smooth'
+        })
+      }
+    }, 100)
+  }, [rectangles, findNextGridPosition])
+
+  const addNewApiChart = useCallback((timeRange = 'monthly') => {
+    const newId = Math.max(...rectangles.map(r => r.id), 0) + 1
+    const size = WIDGET_SIZES['3x3']
+    const position = findNextGridPosition(size.cols, size.rows, rectangles)
+    
+    const newChart = {
+      id: newId,
+      x: position.x,
+      y: position.y,
+      width: size.width,
+      height: size.height,
+      gridCols: size.cols,
+      gridRows: size.rows,
+      color: '#ffffff',
+      isDragging: false,
+      isResizing: false,
+      size: '3x3',
+      type: 'api-chart',
+      timeRange: timeRange,
+      isNew: true,
+      isApiPowered: true
+    }
+    
+    setRectangles(prev => [...prev, newChart])
+    
+    setTimeout(() => {
+      setRectangles(prev => prev.map(r => 
+        r.id === newId ? { ...r, isNew: false } : r
+      ))
+    }, 500)
+    
+    setTimeout(() => {
+      if (canvasRef.current) {
+        const targetY = position.y - 100
+        canvasRef.current.scrollTo({
+          top: Math.max(0, targetY),
+          behavior: 'smooth'
+        })
+      }
+    }, 100)
+  }, [rectangles, findNextGridPosition])
+
+  const addNewApiFunnel = useCallback(() => {
+    const newId = Math.max(...rectangles.map(r => r.id), 0) + 1
+    const size = WIDGET_SIZES['2x2']
+    const position = findNextGridPosition(size.cols, size.rows, rectangles)
+    
+    const newFunnel = {
+      id: newId,
+      x: position.x,
+      y: position.y,
+      width: size.width,
+      height: size.height,
+      gridCols: size.cols,
+      gridRows: size.rows,
+      color: '#ffffff',
+      isDragging: false,
+      isResizing: false,
+      size: '2x2',
+      type: 'api-funnel',
+      isNew: true,
+      isApiPowered: true
+    }
+    
+    setRectangles(prev => [...prev, newFunnel])
+    
+    setTimeout(() => {
+      setRectangles(prev => prev.map(r => 
+        r.id === newId ? { ...r, isNew: false, forceUpdate: Date.now() } : r
+      ))
+    }, 100)
+    
+    setTimeout(() => {
+      setRectangles(prev => prev.map(r => 
+        r.id === newId ? { ...r, isNew: false } : r
+      ))
+    }, 500)
+    
+    setTimeout(() => {
+      if (canvasRef.current) {
+        const targetY = position.y - 100
+        canvasRef.current.scrollTo({
+          top: Math.max(0, targetY),
+          behavior: 'smooth'
+        })
+      }
+    }, 200)
+  }, [rectangles, findNextGridPosition])
+
   return {
     rectangles,
     setRectangles,
@@ -357,6 +489,10 @@ export const useWidgetManagement = () => {
     addNewRectangle,
     addNewChart,
     addNewFunnel,
-    addNewMetric
+    addNewMetric,
+    // API-powered widget functions
+    addNewApiMetric,
+    addNewApiChart,
+    addNewApiFunnel
   }
 }

@@ -4,6 +4,7 @@ import { useMouseInteractions } from './hooks/useMouseInteractions'
 import Sidebar from './components/Sidebar'
 import Widget from './components/Widget'
 import './App.css'
+import './styles/api-widgets.css'
 
 function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
@@ -12,7 +13,18 @@ function App() {
   const widgetManagement = useWidgetManagement()
   const mouseInteractions = useMouseInteractions(widgetManagement)
   
-  const { rectangles, canvasRef, getCanvasBounds, addNewRectangle, addNewChart, addNewFunnel, addNewMetric } = widgetManagement
+  const { 
+    rectangles, 
+    canvasRef, 
+    getCanvasBounds, 
+    addNewRectangle, 
+    addNewChart, 
+    addNewFunnel, 
+    addNewMetric,
+    addNewApiMetric,
+    addNewApiChart,
+    addNewApiFunnel
+  } = widgetManagement
   const { handleMouseDown, handleResizeStart, handleMouseMove, handleMouseUp } = mouseInteractions
 
   // Widget actions for sidebar
@@ -20,7 +32,10 @@ function App() {
     addNewRectangle,
     addNewChart,
     addNewFunnel,
-    addNewMetric
+    addNewMetric,
+    addNewApiMetric,
+    addNewApiChart,
+    addNewApiFunnel
   }
 
   return (
