@@ -371,8 +371,8 @@
 }
 
 .resize-handle-se {
-  bottom: 2px;
-  right: 2px;
+  bottom: 8px;
+  right: 8px;
   cursor: se-resize;
 }
 
@@ -501,6 +501,11 @@
 }
 
 .metric-content.blurred {
+  filter: blur(2px);
+  transition: filter 0.15s ease;
+}
+
+.funnel-content.blurred {
   filter: blur(2px);
   transition: filter 0.15s ease;
 }
