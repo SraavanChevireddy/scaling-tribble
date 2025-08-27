@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react'
 import { ResponsiveBar } from '@nivo/bar'
+import { ResponsiveFunnel } from '@nivo/funnel'
 import './App.css'
 
 const GRID_SIZE = 150
@@ -21,6 +22,14 @@ const SAMPLE_CHART_DATA = [
   { month: 'Jun', sales: 380, expenses: 220 }
 ]
 
+const SAMPLE_FUNNEL_DATA = [
+  { id: 'step_1', value: 1000, label: 'Website Visitors' },
+  { id: 'step_2', value: 800, label: 'Product Views' },
+  { id: 'step_3', value: 600, label: 'Add to Cart' },
+  { id: 'step_4', value: 400, label: 'Checkout' },
+  { id: 'step_5', value: 200, label: 'Purchase' }
+]
+
 const SAMPLE_METRICS = [
   { title: 'This Month', subtitle: '1 Jul - 30 Jul', value: '99', color: '#ef4444' },
   { title: 'Total Users', subtitle: 'Active this week', value: '1.2K', color: '#3b82f6' },
@@ -30,36 +39,7 @@ const SAMPLE_METRICS = [
 ]
 
 function App() {
-  const [rectangles, setRectangles] = useState([
-    { 
-      id: 1, 
-      x: 50, 
-      y: 50, 
-      gridCols: 2, 
-      gridRows: 1, 
-      width: WIDGET_SIZES['2x1'].width, 
-      height: WIDGET_SIZES['2x1'].height, 
-      color: '#3b82f6', 
-      isDragging: false,
-      isResizing: false,
-      size: '2x1',
-      type: 'widget'
-    },
-    { 
-      id: 2, 
-      x: 350, 
-      y: 400, 
-      gridCols: 1, 
-      gridRows: 1, 
-      width: WIDGET_SIZES['1x1'].width, 
-      height: WIDGET_SIZES['1x1'].height, 
-      color: '#f97316', 
-      isDragging: false,
-      isResizing: false,
-      size: '1x1',
-      type: 'widget'
-    }
-  ])
+  const [rectangles, setRectangles] = useState([])
   const [dragState, setDragState] = useState({ id: null, offsetX: 0, offsetY: 0 })
   const [resizeState, setResizeState] = useState({ id: null, handle: null, startX: 0, startY: 0, startWidth: 0, startHeight: 0 })
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
@@ -90,6 +70,7 @@ function App() {
   const findValidPosition = useCallback((movingRect, newX, newY, otherRects) => {
     const canvas = getCanvasBounds()
     const padding = 10
+    const widgetPadding = 10
     
     let validX = Math.max(padding, Math.min(newX, canvas.width - movingRect.width - padding))
     let validY = Math.max(padding, Math.min(newY, canvas.height - movingRect.height - padding))
@@ -97,21 +78,29 @@ function App() {
     const testRect = { ...movingRect, x: validX, y: validY }
 
     for (const other of otherRects) {
-      if (checkCollision(testRect, other)) {
-        const overlapX = Math.min(testRect.x + testRect.width - other.x, other.x + other.width - testRect.x)
-        const overlapY = Math.min(testRect.y + testRect.height - other.y, other.y + other.height - testRect.y)
+      // Create expanded collision boxes that include widget padding
+      const expandedOther = {
+        x: other.x - widgetPadding,
+        y: other.y - widgetPadding,
+        width: other.width + widgetPadding * 2,
+        height: other.height + widgetPadding * 2
+      }
+      
+      if (checkCollision(testRect, expandedOther)) {
+        const overlapX = Math.min(testRect.x + testRect.width - expandedOther.x, expandedOther.x + expandedOther.width - testRect.x)
+        const overlapY = Math.min(testRect.y + testRect.height - expandedOther.y, expandedOther.y + expandedOther.height - testRect.y)
         
         if (overlapX < overlapY) {
           const moveLeft = testRect.x > other.x
           validX = moveLeft ? 
-            other.x + other.width : 
-            other.x - testRect.width
+            other.x + other.width + widgetPadding : 
+            other.x - testRect.width - widgetPadding
           validX = Math.max(padding, Math.min(validX, canvas.width - testRect.width - padding))
         } else {
           const moveUp = testRect.y > other.y
           validY = moveUp ? 
-            other.y + other.height : 
-            other.y - testRect.height
+            other.y + other.height + widgetPadding : 
+            other.y - testRect.height - widgetPadding
           validY = Math.max(padding, Math.min(validY, canvas.height - testRect.height - padding))
         }
         
@@ -156,47 +145,67 @@ function App() {
     return colors[Math.floor(Math.random() * colors.length)]
   }, [])
 
-  const findValidPositionForNewWidget = useCallback((width, height, existingRects) => {
+  const findNextGridPosition = useCallback((widgetCols, widgetRows, existingRects) => {
     const sidebarWidth = sidebarCollapsed ? 80 : 290
     const canvasWidth = window.innerWidth - sidebarWidth
     const padding = 10
+    const widgetPadding = 10 // Padding between widgets
     
-    // Ensure minimum canvas dimensions to fit the new widget
-    const minCanvasWidth = Math.max(canvasWidth, width + padding * 2)
-    const minCanvasHeight = Math.max(window.innerHeight, height + padding * 2)
+    // Calculate grid dimensions (including padding between widgets)
+    const gridCols = Math.floor((canvasWidth - padding * 2) / (GRID_SIZE + widgetPadding))
+    const maxGridRows = 50
     
-    const maxX = minCanvasWidth - width - padding
-    const maxY = minCanvasHeight - height - padding
-
-    // Try to find a position that doesn't collide
-    for (let attempts = 0; attempts < 100; attempts++) {
-      const x = padding + Math.random() * Math.max(0, maxX - padding)
-      const y = padding + Math.random() * Math.max(0, maxY - padding)
+    // Create a grid occupancy map
+    const occupiedSlots = new Set()
+    
+    // Mark occupied slots based on existing widgets
+    existingRects.forEach(rect => {
+      const startCol = Math.round((rect.x - padding) / (GRID_SIZE + widgetPadding))
+      const startRow = Math.round((rect.y - padding) / (GRID_SIZE + widgetPadding))
+      const rectCols = rect.gridCols || 1
+      const rectRows = rect.gridRows || 1
       
-      const testRect = { x, y, width, height }
-      let hasCollision = false
-      
-      for (const existing of existingRects) {
-        if (checkCollision(testRect, existing)) {
-          hasCollision = true
-          break
+      for (let row = startRow; row < startRow + rectRows; row++) {
+        for (let col = startCol; col < startCol + rectCols; col++) {
+          if (row >= 0 && col >= 0) {
+            occupiedSlots.add(`${row}-${col}`)
+          }
         }
       }
-      
-      if (!hasCollision) {
-        return { x, y }
+    })
+    
+    // Find the next available position (fill horizontally first)
+    for (let row = 0; row < maxGridRows; row++) {
+      for (let col = 0; col <= gridCols - widgetCols; col++) {
+        let canFit = true
+        
+        // Check if this position can fit the widget
+        for (let checkRow = row; checkRow < row + widgetRows && canFit; checkRow++) {
+          for (let checkCol = col; checkCol < col + widgetCols && canFit; checkCol++) {
+            if (occupiedSlots.has(`${checkRow}-${checkCol}`)) {
+              canFit = false
+            }
+          }
+        }
+        
+        if (canFit) {
+          return {
+            x: padding + col * (GRID_SIZE + widgetPadding),
+            y: padding + row * (GRID_SIZE + widgetPadding)
+          }
+        }
       }
     }
     
-    // If no valid position found, place at top-left
+    // Fallback to top-left if no space found
     return { x: padding, y: padding }
-  }, [sidebarCollapsed, checkCollision])
+  }, [sidebarCollapsed])
 
   const addNewRectangle = useCallback(() => {
     const newId = Math.max(...rectangles.map(r => r.id), 0) + 1
     const color = generateRandomColor()
     const size = WIDGET_SIZES['1x1']
-    const position = findValidPositionForNewWidget(size.width, size.height, rectangles)
+    const position = findNextGridPosition(size.cols, size.rows, rectangles)
     
     const newRect = {
       id: newId,
@@ -233,12 +242,12 @@ function App() {
         })
       }
     }, 100)
-  }, [rectangles, generateRandomColor, findValidPositionForNewWidget])
+  }, [rectangles, generateRandomColor, findNextGridPosition])
 
   const addNewChart = useCallback(() => {
     const newId = Math.max(...rectangles.map(r => r.id), 0) + 1
     const size = WIDGET_SIZES['3x3']
-    const position = findValidPositionForNewWidget(size.width, size.height, rectangles)
+    const position = findNextGridPosition(size.cols, size.rows, rectangles)
     
     const newChart = {
       id: newId,
@@ -276,12 +285,55 @@ function App() {
         })
       }
     }, 100)
-  }, [rectangles, findValidPositionForNewWidget])
+  }, [rectangles, findNextGridPosition])
+
+  const addNewFunnel = useCallback(() => {
+    const newId = Math.max(...rectangles.map(r => r.id), 0) + 1
+    const size = WIDGET_SIZES['2x2']
+    const position = findNextGridPosition(size.cols, size.rows, rectangles)
+    
+    const newFunnel = {
+      id: newId,
+      x: position.x,
+      y: position.y,
+      width: size.width,
+      height: size.height,
+      gridCols: size.cols,
+      gridRows: size.rows,
+      color: '#ffffff',
+      isDragging: false,
+      isResizing: false,
+      size: '2x2',
+      type: 'funnel',
+      funnelData: SAMPLE_FUNNEL_DATA,
+      isNew: true
+    }
+    
+    setRectangles(prev => [...prev, newFunnel])
+    
+    // Remove the "new" flag after animation completes
+    setTimeout(() => {
+      setRectangles(prev => prev.map(r => 
+        r.id === newId ? { ...r, isNew: false } : r
+      ))
+    }, 500)
+    
+    // Smooth scroll to new funnel after a brief delay
+    setTimeout(() => {
+      if (canvasRef.current) {
+        const targetY = position.y - 100 // 100px above the funnel
+        canvasRef.current.scrollTo({
+          top: Math.max(0, targetY),
+          behavior: 'smooth'
+        })
+      }
+    }, 100)
+  }, [rectangles, findNextGridPosition])
 
   const addNewMetric = useCallback((metricSize = '1x1') => {
     const newId = Math.max(...rectangles.map(r => r.id), 0) + 1
     const size = WIDGET_SIZES[metricSize]
-    const position = findValidPositionForNewWidget(size.width, size.height, rectangles)
+    const position = findNextGridPosition(size.cols, size.rows, rectangles)
     const randomMetric = SAMPLE_METRICS[Math.floor(Math.random() * SAMPLE_METRICS.length)]
     
     const newMetric = {
@@ -320,14 +372,14 @@ function App() {
         })
       }
     }, 100)
-  }, [rectangles, findValidPositionForNewWidget])
+  }, [rectangles, findNextGridPosition])
 
   const handleResizeStart = useCallback((e, rectId) => {
     e.preventDefault()
     e.stopPropagation()
     
     const rect = rectangles.find(r => r.id === rectId)
-    if (!rect || rect.type === 'chart') return
+    if (!rect || rect.type === 'chart' || rect.type === 'funnel') return
 
     setResizeState({
       id: rectId,
@@ -376,7 +428,7 @@ function App() {
 
     if (resizeState.id) {
       const resizingRect = rectangles.find(r => r.id === resizeState.id)
-      if (!resizingRect || resizingRect.type === 'chart') return
+      if (!resizingRect || resizingRect.type === 'chart' || resizingRect.type === 'funnel') return
 
       const deltaX = e.clientX - resizeState.startX
       const deltaY = e.clientY - resizeState.startY
@@ -446,7 +498,7 @@ function App() {
   const handleMouseUp = useCallback(() => {
     if (resizeState.id) {
       const rect = rectangles.find(r => r.id === resizeState.id)
-      if (rect && rect.type !== 'chart') {
+      if (rect && rect.type !== 'chart' && rect.type !== 'funnel') {
         // Find the best fitting grid size for current dimensions
         let closestSize = getClosestSize(rect.width, rect.height)
         
@@ -540,6 +592,12 @@ function App() {
               >
                 📈 Add Metric Widget
               </button>
+              <button 
+                className="add-funnel-btn"
+                onClick={addNewFunnel}
+              >
+                🔻 Add Funnel Chart
+              </button>
             </div>
             
             <div className="sidebar-section">
@@ -574,7 +632,7 @@ function App() {
           {rectangles.map(rect => (
             <div
               key={rect.id}
-              className={`draggable-rectangle ${rect.isDragging ? 'dragging' : ''} ${rect.isResizing ? 'resizing' : ''} ${rect.isNew ? 'new-widget' : ''} ${rect.type === 'chart' ? 'chart-widget' : ''}`}
+              className={`draggable-rectangle ${rect.isDragging ? 'dragging' : ''} ${rect.isResizing ? 'resizing' : ''} ${rect.isNew ? 'new-widget' : ''} ${rect.type === 'chart' || rect.type === 'funnel' ? 'chart-widget' : ''}`}
               style={{
                 left: `${rect.x}px`,
                 top: `${rect.y}px`,
@@ -657,6 +715,38 @@ function App() {
                     barAriaLabel={e => `${e.id}: ${e.formattedValue} in month: ${e.indexValue}`}
                   />
                 </div>
+              ) : rect.type === 'funnel' ? (
+                <>
+                  <div className="chart-container">
+                    <div className="widget-info chart-info">
+                      <span className="size-label">Funnel Chart</span>
+                    </div>
+                    <div className={`funnel-content ${rect.isDragging ? 'blurred' : ''}`} style={{ height: `${rect.height - 40}px`, width: '100%' }}>
+                      <ResponsiveFunnel
+                        data={rect.funnelData}
+                        margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
+                        valueFormat=">-.4s"
+                        colors={{ scheme: 'spectral' }}
+                        borderWidth={10}
+                        labelColor={{ from: 'color', modifiers: [['darker', 3]] }}
+                        enableAfterSeparators={false}
+                        enableBeforeSeparators={false}
+                        beforeSeparatorLength={250}
+                        beforeSeparatorOffset={5}
+                        afterSeparatorLength={250}
+                        afterSeparatorOffset={5}
+                        currentPartSizeExtension={3}
+                        currentBorderWidth={15}
+                      />
+                    </div>
+                  </div>
+                  <div className="resize-handles">
+                    <div 
+                      className="resize-handle resize-handle-se"
+                      onMouseDown={(e) => handleResizeStart(e, rect.id)}
+                    />
+                  </div>
+                </>
               ) : rect.type === 'metric' ? (
                 <div className={`metric-container ${rect.size === '1x1' ? 'metric-compact' : 'metric-expanded'}`}>
                   <div className="widget-info metric-info">
@@ -684,7 +774,7 @@ function App() {
                     <span className="size-label">{rect.size}</span>
                   </div>
                   
-                  {rect.type !== 'chart' && (
+                  {rect.type !== 'chart' && rect.type !== 'funnel' && (
                     <div className="resize-handles">
                       <div 
                         className="resize-handle resize-handle-se"
