@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { ResponsiveBar } from '@nivo/bar'
 import { ResponsiveFunnel } from '@nivo/funnel'
 import './App.css'
@@ -45,7 +45,45 @@ function App() {
   const [resizeState, setResizeState] = useState({ id: null, handle: null, startX: 0, startY: 0, startWidth: 0, startHeight: 0 })
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
+  const [dateRange, setDateRange] = useState('7')
+  const [waiverType, setWaiverType] = useState('select')
+  const [expirationFilter, setExpirationFilter] = useState('select')
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [isWaiverDropdownOpen, setIsWaiverDropdownOpen] = useState(false)
+  const [isExpirationDropdownOpen, setIsExpirationDropdownOpen] = useState(false)
+  const [openMenuId, setOpenMenuId] = useState(null)
+  const [expandedWidgetId, setExpandedWidgetId] = useState(null)
+  const dropdownRef = useRef(null)
+  const waiverDropdownRef = useRef(null)
+  const expirationDropdownRef = useRef(null)
+  const menuRef = useRef(null)
   const canvasRef = useRef(null)
+  
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false)
+      }
+      
+      if (waiverDropdownRef.current && !waiverDropdownRef.current.contains(event.target)) {
+        setIsWaiverDropdownOpen(false)
+      }
+      
+      if (expirationDropdownRef.current && !expirationDropdownRef.current.contains(event.target)) {
+        setIsExpirationDropdownOpen(false)
+      }
+      
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setOpenMenuId(null)
+      }
+    }
+    
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
 
   const checkCollision = useCallback((rect1, rect2) => {
     return !(rect1.x + rect1.width <= rect2.x || 
@@ -56,11 +94,13 @@ function App() {
 
   const getCanvasBounds = useCallback(() => {
     const canvasWidth = window.innerWidth
+    const FILTER_AREA_HEIGHT = 70
+    const minHeight = TITLE_AREA_HEIGHT + FILTER_AREA_HEIGHT + 50 // Minimum canvas height to account for filters
     
     // Calculate required height based on widgets
     const maxY = rectangles.reduce((max, rect) => {
       return Math.max(max, rect.y + rect.height + 50) // 50px padding at bottom
-    }, window.innerHeight)
+    }, minHeight)
     
     return {
       width: canvasWidth,
@@ -72,7 +112,8 @@ function App() {
     const canvas = getCanvasBounds()
     const padding = 10
     const widgetPadding = 10
-    const minY = TITLE_AREA_HEIGHT + padding // Minimum Y to stay below title areas
+    const FILTER_AREA_HEIGHT = 70
+    const minY = TITLE_AREA_HEIGHT + FILTER_AREA_HEIGHT + padding // Minimum Y to stay below filters
     
     let validX = Math.max(padding, Math.min(newX, canvas.width - movingRect.width - padding))
     let validY = Math.max(minY, Math.min(newY, canvas.height - movingRect.height - padding))
@@ -151,7 +192,8 @@ function App() {
     const canvasWidth = window.innerWidth
     const padding = 10
     const widgetPadding = 10 // Padding between widgets
-    const startY = TITLE_AREA_HEIGHT + padding // Start below title areas
+    const FILTER_AREA_HEIGHT = 70 // Height reserved for filters
+    const startY = TITLE_AREA_HEIGHT + FILTER_AREA_HEIGHT + padding // Start below filters
     
     // Calculate grid dimensions (including padding between widgets)
     const gridCols = Math.floor((canvasWidth - padding * 2) / (GRID_SIZE + widgetPadding))
@@ -338,6 +380,26 @@ function App() {
       }
     }, 200)
   }, [rectangles, findNextGridPosition])
+  
+  const handleWidgetMenu = useCallback((e, rectId) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setOpenMenuId(openMenuId === rectId ? null : rectId)
+  }, [openMenuId])
+  
+  const handleDeleteWidget = useCallback((e, rectId) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setRectangles(prev => prev.filter(r => r.id !== rectId))
+    setOpenMenuId(null)
+  }, [])
+  
+  const handleExpandWidget = useCallback((e, rectId) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setExpandedWidgetId(rectId)
+    setOpenMenuId(null)
+  }, [])
 
   const addNewMetric = useCallback((metricSize = '1x1') => {
     const newId = Math.max(...rectangles.map(r => r.id), 0) + 1
@@ -611,8 +673,146 @@ function App() {
     widget.keywords.some(keyword => keyword.toLowerCase().includes(searchTerm.toLowerCase()))
   )
 
+  // Function to get the title for a widget based on its type
+  const getWidgetTitle = useCallback((rect) => {
+    switch(rect?.type) {
+      case 'chart':
+        return 'Bar Chart';
+      case 'funnel':
+        return 'Expiring Waivers';
+      case 'metric':
+        return rect?.metricData?.title || 'Metric Widget';
+      default:
+        return 'Widget';
+    }
+  }, []);
+
+  // Ensure all widgets are below the filters
+  useEffect(() => {
+    if (rectangles.length > 0) {
+      const FILTER_AREA_HEIGHT = 70 // Same as in findNextGridPosition
+      const minY = TITLE_AREA_HEIGHT + FILTER_AREA_HEIGHT + 10
+      
+      // Check if any widget is above the minimum Y position
+      const needsRepositioning = rectangles.some(rect => rect.y < minY)
+      
+      if (needsRepositioning) {
+        setRectangles(prev => prev.map(rect => {
+          if (rect.y < minY) {
+            return { ...rect, y: minY }
+          }
+          return rect
+        }))
+      }
+    }
+  }, [])
+  
   return (
     <div className={`app-container ${sidebarCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'}`}>
+      
+      {/* Modal for expanded widgets */}
+      {expandedWidgetId && (
+        <div className="widget-modal-overlay" onClick={() => setExpandedWidgetId(null)}>
+          <div className="widget-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="widget-modal-header">
+              <h3>{getWidgetTitle(rectangles.find(r => r.id === expandedWidgetId))}</h3>
+              <button className="modal-close-btn" onClick={() => setExpandedWidgetId(null)}>×</button>
+            </div>
+            <div className="widget-modal-content">
+              {(() => {
+                const expandedWidget = rectangles.find(r => r.id === expandedWidgetId);
+                if (!expandedWidget) return null;
+                
+                switch(expandedWidget.type) {
+                  case 'chart':
+                    return (
+                      <div className="expanded-chart">
+                        <ResponsiveBar
+                          data={expandedWidget.chartData}
+                          keys={['sales', 'expenses']}
+                          indexBy="month"
+                          margin={{ top: 50, right: 60, bottom: 50, left: 60 }}
+                          padding={0.3}
+                          valueScale={{ type: 'linear' }}
+                          indexScale={{ type: 'band', round: true }}
+                          colors={['#3b82f6', '#f97316']}
+                          borderColor={{ from: 'color', modifiers: [['darker', 1.6]] }}
+                          axisTop={null}
+                          axisRight={null}
+                          axisBottom={{
+                            tickSize: 5,
+                            tickPadding: 5,
+                            tickRotation: 0,
+                            legend: 'Month',
+                            legendPosition: 'middle',
+                            legendOffset: 32
+                          }}
+                          axisLeft={{
+                            tickSize: 5,
+                            tickPadding: 5,
+                            tickRotation: 0,
+                            legend: 'Amount',
+                            legendPosition: 'middle',
+                            legendOffset: -40
+                          }}
+                          labelSkipWidth={12}
+                          labelSkipHeight={12}
+                          labelTextColor={{ from: 'color', modifiers: [['darker', 1.6]] }}
+                          legends={[
+                            {
+                              dataFrom: 'keys',
+                              anchor: 'bottom-right',
+                              direction: 'column',
+                              justify: false,
+                              translateX: 120,
+                              translateY: 0,
+                              itemsSpacing: 2,
+                              itemWidth: 100,
+                              itemHeight: 20,
+                              itemDirection: 'left-to-right',
+                              itemOpacity: 0.85,
+                              symbolSize: 20,
+                              effects: [{ on: 'hover', style: { itemOpacity: 1 } }]
+                            }
+                          ]}
+                        />
+                      </div>
+                    );
+                  case 'funnel':
+                    return (
+                      <div className="expanded-funnel">
+                        <ResponsiveFunnel
+                          data={expandedWidget.funnelData}
+                          margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+                          valueFormat=">-.4s"
+                          colors={{ scheme: 'spectral' }}
+                          borderWidth={20}
+                          labelColor={{ from: 'color', modifiers: [['darker', 3]] }}
+                          enableAfterSeparators={false}
+                          enableBeforeSeparators={false}
+                        />
+                      </div>
+                    );
+                  case 'metric':
+                    return (
+                      <div className="expanded-metric">
+                        <div className="expanded-metric-header">
+                          <h2>{expandedWidget.metricData.title}</h2>
+                          <p>{expandedWidget.metricData.subtitle}</p>
+                        </div>
+                        <div className="expanded-metric-value" style={{ color: expandedWidget.metricData.color }}>
+                          {expandedWidget.metricData.value}
+                        </div>
+                      </div>
+                    );
+                  default:
+                    return <div className="expanded-default-widget">Widget content</div>;
+                }
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
       <div className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`} onClick={sidebarCollapsed ? () => setSidebarCollapsed(false) : undefined}>
         <div className="sidebar-header">
           {!sidebarCollapsed && (
@@ -679,6 +879,180 @@ function App() {
         </div>
       </div>
       
+      <div className="filter-container">
+        <div className="filters-wrapper">
+          <div className="date-range-filter">
+            <div className="filter-label">
+              Data Range:
+              <div className="custom-dropdown" ref={dropdownRef}>
+                <div 
+                  className="dropdown-selected"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                >
+                  {dateRange ? `${dateRange} days` : 'Select'}
+                  <span className="dropdown-arrow">▼</span>
+                </div>
+                {isDropdownOpen && (
+                  <div className="dropdown-menu">
+                    <div 
+                      className={`dropdown-item ${dateRange === '' ? 'active' : ''}`}
+                      onClick={() => { setDateRange(''); setIsDropdownOpen(false); }}
+                    >
+                      Select days
+                    </div>
+                    <div 
+                      className={`dropdown-item ${dateRange === '7' ? 'active' : ''}`}
+                      onClick={() => { setDateRange('7'); setIsDropdownOpen(false); }}
+                    >
+                      7 days
+                    </div>
+                    <div 
+                      className={`dropdown-item ${dateRange === '15' ? 'active' : ''}`}
+                      onClick={() => { setDateRange('15'); setIsDropdownOpen(false); }}
+                    >
+                      15 days
+                    </div>
+                    <div 
+                      className={`dropdown-item ${dateRange === '30' ? 'active' : ''}`}
+                      onClick={() => { setDateRange('30'); setIsDropdownOpen(false); }}
+                    >
+                      30 days
+                    </div>
+                    <div 
+                      className={`dropdown-item ${dateRange === '25' ? 'active' : ''}`}
+                      onClick={() => { setDateRange('25'); setIsDropdownOpen(false); }}
+                    >
+                      25 days
+                    </div>
+                    <div 
+                      className={`dropdown-item ${dateRange === '70' ? 'active' : ''}`}
+                      onClick={() => { setDateRange('70'); setIsDropdownOpen(false); }}
+                    >
+                      70 days
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          <div className="waiver-type-filter">
+            <div className="filter-label">
+              Waivers:
+              <div className="custom-dropdown" ref={waiverDropdownRef}>
+                <div 
+                  className="dropdown-selected"
+                  onClick={() => setIsWaiverDropdownOpen(!isWaiverDropdownOpen)}
+                >
+                  {waiverType === 'root' && 'Root'}
+                  {waiverType === 'org' && 'Organisational'}
+                  {waiverType === 'app' && 'App'}
+                  {waiverType === 'manual' && 'Manual'}
+                  {waiverType === 'auto' && 'Auto'}
+                  {waiverType === 'select' && 'Select'}
+                  {!waiverType && 'Select waiver type'}
+                  <span className="dropdown-arrow">▼</span>
+                </div>
+                {isWaiverDropdownOpen && (
+                  <div className="dropdown-menu">
+                    <div 
+                      className={`dropdown-item ${waiverType === 'select' ? 'active' : ''}`}
+                      onClick={() => { setWaiverType('select'); setIsWaiverDropdownOpen(false); }}
+                    >
+                      Select
+                    </div>
+                    <div 
+                      className={`dropdown-item ${waiverType === 'root' ? 'active' : ''}`}
+                      onClick={() => { setWaiverType('root'); setIsWaiverDropdownOpen(false); }}
+                    >
+                      Root
+                    </div>
+                    <div 
+                      className={`dropdown-item ${waiverType === 'org' ? 'active' : ''}`}
+                      onClick={() => { setWaiverType('org'); setIsWaiverDropdownOpen(false); }}
+                    >
+                      Organisational
+                    </div>
+                    <div 
+                      className={`dropdown-item ${waiverType === 'app' ? 'active' : ''}`}
+                      onClick={() => { setWaiverType('app'); setIsWaiverDropdownOpen(false); }}
+                    >
+                      App
+                    </div>
+                    <div 
+                      className={`dropdown-item ${waiverType === 'manual' ? 'active' : ''}`}
+                      onClick={() => { setWaiverType('manual'); setIsWaiverDropdownOpen(false); }}
+                    >
+                      Manual
+                    </div>
+                    <div 
+                      className={`dropdown-item ${waiverType === 'auto' ? 'active' : ''}`}
+                      onClick={() => { setWaiverType('auto'); setIsWaiverDropdownOpen(false); }}
+                    >
+                      Auto
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          <div className="expiration-filter">
+            <div className="filter-label">
+              Expiration:
+              <div className="custom-dropdown" ref={expirationDropdownRef}>
+                <div 
+                  className="dropdown-selected"
+                  onClick={() => setIsExpirationDropdownOpen(!isExpirationDropdownOpen)}
+                >
+                  {expirationFilter === '7' && 'Expiring in 7 days'}
+                  {expirationFilter === '30' && 'Expiring in 30 days'}
+                  {expirationFilter === '90' && 'Expiring in 90 days'}
+                  {expirationFilter === 'never' && 'Never expires'}
+                  {expirationFilter === 'select' && 'Select'}
+                  {!expirationFilter && 'Select expiration'}
+                  <span className="dropdown-arrow">▼</span>
+                </div>
+                {isExpirationDropdownOpen && (
+                  <div className="dropdown-menu">
+                    <div 
+                      className={`dropdown-item ${expirationFilter === 'select' ? 'active' : ''}`}
+                      onClick={() => { setExpirationFilter('select'); setIsExpirationDropdownOpen(false); }}
+                    >
+                      Select
+                    </div>
+                    <div 
+                      className={`dropdown-item ${expirationFilter === '7' ? 'active' : ''}`}
+                      onClick={() => { setExpirationFilter('7'); setIsExpirationDropdownOpen(false); }}
+                    >
+                      Expiring in 7 days
+                    </div>
+                    <div 
+                      className={`dropdown-item ${expirationFilter === '30' ? 'active' : ''}`}
+                      onClick={() => { setExpirationFilter('30'); setIsExpirationDropdownOpen(false); }}
+                    >
+                      Expiring in 30 days
+                    </div>
+                    <div 
+                      className={`dropdown-item ${expirationFilter === '90' ? 'active' : ''}`}
+                      onClick={() => { setExpirationFilter('90'); setIsExpirationDropdownOpen(false); }}
+                    >
+                      Expiring in 90 days
+                    </div>
+                    <div 
+                      className={`dropdown-item ${expirationFilter === 'never' ? 'active' : ''}`}
+                      onClick={() => { setExpirationFilter('never'); setIsExpirationDropdownOpen(false); }}
+                    >
+                      Never expires
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
       <div 
         ref={canvasRef}
         className="canvas"
@@ -708,6 +1082,35 @@ function App() {
               }}
               onMouseDown={(e) => handleMouseDown(e, rect.id)}
             >
+              <div 
+                className="widget-menu-trigger"
+                onClick={(e) => handleWidgetMenu(e, rect.id)}
+              >
+                <span className="widget-menu-dots">⋮</span>
+              </div>
+              
+              {openMenuId === rect.id && (
+                <div 
+                  className="widget-menu"
+                  ref={openMenuId === rect.id ? menuRef : null}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div 
+                    className="widget-menu-item"
+                    onClick={(e) => handleExpandWidget(e, rect.id)}
+                  >
+                    <span className="menu-icon">⤢</span>
+                    Expand
+                  </div>
+                  <div 
+                    className="widget-menu-item delete"
+                    onClick={(e) => handleDeleteWidget(e, rect.id)}
+                  >
+                    <span className="menu-icon">🗑</span>
+                    Delete
+                  </div>
+                </div>
+              )}
               {rect.type === 'chart' ? (
                 <div className="chart-container">
                   <div className="widget-info chart-info">
