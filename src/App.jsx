@@ -3,17 +3,28 @@ import { useWidgetManagement } from './hooks/useWidgetManagement'
 import { useMouseInteractions } from './hooks/useMouseInteractions'
 import Sidebar from './components/Sidebar'
 import Widget from './components/Widget'
+import DataRangeFilter from './components/DataRangeFilter'
+import WaiverFilter from './components/WaiverFilter'
+import ExpirationFilter from './components/ExpirationFilter'
 import './App.css'
 
 function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [selectedDataRange, setSelectedDataRange] = useState(null)
+  const [selectedWaiver, setSelectedWaiver] = useState(null)
+  const [selectedExpiration, setSelectedExpiration] = useState(null)
   
   // Use custom hooks for widget management and interactions
   const widgetManagement = useWidgetManagement()
   const mouseInteractions = useMouseInteractions(widgetManagement)
   
-  const { rectangles, canvasRef, getCanvasBounds, addNewRectangle, addNewChart, addNewFunnel, addNewMetric } = widgetManagement
+  const { rectangles, setRectangles, canvasRef, getCanvasBounds, addNewRectangle, addNewChart, addNewFunnel, addNewMetric } = widgetManagement
   const { handleMouseDown, handleResizeStart, handleMouseMove, handleMouseUp } = mouseInteractions
+
+  // Delete widget handler
+  const handleDeleteWidget = (id) => {
+    setRectangles(prev => prev.filter(rect => rect.id !== id));
+  };
 
   // Widget actions for sidebar
   const widgetActions = {
@@ -37,6 +48,14 @@ function App() {
         </div>
       </div>
       
+      <div className="filter-container">
+        <div className="filters-wrapper">
+          <DataRangeFilter onRangeChange={setSelectedDataRange} />
+          <WaiverFilter onWaiverChange={setSelectedWaiver} />
+          <ExpirationFilter onExpirationChange={setSelectedExpiration} />
+        </div>
+      </div>
+      
       <div 
         ref={canvasRef}
         className="canvas"
@@ -57,6 +76,7 @@ function App() {
               rect={rect}
               handleMouseDown={handleMouseDown}
               handleResizeStart={handleResizeStart}
+              onDeleteWidget={handleDeleteWidget}
             />
           ))}
         </div>
