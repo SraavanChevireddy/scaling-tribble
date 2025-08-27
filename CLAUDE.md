@@ -62,19 +62,48 @@ hackathon-app/
   - Sample data: "This Month", "Total Users", "Revenue", etc.
   - Color-coded values
 
+#### 4. Funnel Chart Widgets 🔻
+- **Type**: Nivo ResponsiveFunnel charts
+- **Size**: Fixed 2×2 (300×300px)
+- **Title**: "Expiring Waivers" - Clean overlay title design
+- **Data**: Sample conversion funnel data (Website Visitors → Product Views → Add to Cart → Checkout → Purchase)
+- **Behavior**: Draggable only (no resizing)
+- **Features**: Optimized margins and sizing to fit perfectly in 2×2 widget space
+
 ## 🎨 Design Features
 
 ### Visual Design
 - **Canvas**: White background with subtle dotted grid pattern
 - **Widgets**: Rounded corners (12px), soft shadows, hover effects
-- **Glassmorphism**: Sidebar and credit badge use blur effects
-- **Professional Typography**: Consistent font weights and sizes
+- **Glassmorphism**: Sidebar, widget cards, and credit badge use blur effects with backdrop filters
+- **Professional Typography**: Arial Rounded MT font family applied project-wide
+- **Modern Card UI**: Sophisticated widget creation cards with gradient backgrounds and micro-interactions
 
 ### Animations
 - **Smooth Resize**: Cubic-bezier easing functions
 - **Widget Entrance**: Scale and rotate animation for new widgets
 - **Scroll Behavior**: Smooth scrolling to new widgets
 - **Hover States**: Subtle transform and shadow changes
+- **Card Interactions**: Scale, rotation, and color transition effects on widget cards
+
+## 🎛 Enhanced Sidebar Features
+
+### Modern Widget Creation Interface
+- **Glassmorphic Cards**: 2×2 grid layout with semi-transparent cards featuring backdrop blur
+- **Smart Search**: Capsule-shaped search bar with real-time filtering functionality
+- **Icon System**: Custom SVG icons for each widget type with color-coded themes:
+  - **Basic Widget**: Blue theme with plus icon
+  - **Metric Widget**: Orange theme with analytics icon  
+  - **Bar Chart**: Purple theme with chart icon
+  - **Expiring Waivers**: Indigo theme with funnel icon
+- **Advanced Interactions**: Hover effects with scale, rotation, and gradient transformations
+
+### Search Functionality
+- **Real-time Filtering**: Instant widget card filtering as you type
+- **Comprehensive Keywords**: Searches across titles, subtitles, and keyword arrays
+- **Smart Matching**: Supports terms like "kpi", "analytics", "waiver", "chart", "funnel"
+- **No Results State**: Helpful suggestions when no widgets match search criteria
+- **Capsule Design**: Beautiful rounded search input with glassmorphism effects
 
 ## 🔧 Key Implementation Details
 
@@ -127,6 +156,7 @@ npm run build
 ```json
 {
   "@nivo/bar": "^0.87.0",
+  "@nivo/funnel": "^0.87.0",
   "react": "^18.2.0",
   "react-dom": "^18.2.0"
 }
@@ -145,29 +175,57 @@ npm run build
 3. **Grid System**: Added iPhone-like widget sizing with smooth snap-to-grid
 4. **Resizing**: Added resize handles with smooth animations
 5. **Multiple Types**: Extended to support charts and metrics
+6. **Funnel Charts**: Added Nivo ResponsiveFunnel widgets with "Expiring Waivers" functionality
+7. **UI Modernization**: Complete redesign of sidebar with glassmorphic cards and search functionality
 
 ### Key Challenges Solved
 - **Collision Flakiness**: Simplified collision detection algorithm
 - **Smooth Animations**: Removed jarring mid-drag snapping
 - **Layout Responsiveness**: Implemented dynamic canvas height calculation
 - **Widget Type Management**: Added type-specific behaviors (resize restrictions)
+- **Funnel Chart Formatting**: Fixed ResponsiveFunnel sizing issues with persistent CSS styling
+- **Search Performance**: Implemented real-time filtering without performance degradation
+- **Component Order Issues**: Resolved function reference errors in widget definitions
+
+### Recent Session Improvements (Latest Update)
+1. **Funnel Chart Integration**: Added complete Nivo ResponsiveFunnel support with custom "Expiring Waivers" branding
+2. **Typography Overhaul**: Implemented Arial Rounded MT font across entire application for consistent professional appearance
+3. **Sidebar Modernization**: 
+   - Removed outdated "Widget Tools" section for cleaner interface
+   - Redesigned "Add Widget" section with sophisticated glassmorphic cards
+   - Added 2×2 grid layout with color-coded themes for each widget type
+4. **Advanced Search System**:
+   - Capsule-shaped search input with glassmorphism effects
+   - Real-time filtering across widget titles, subtitles, and keywords
+   - Smart keyword matching (e.g., "kpi" finds "Metric Widget")
+   - Helpful no-results state with search suggestions
+5. **Enhanced Interactions**:
+   - Sophisticated hover animations with scale, rotation, and color transitions
+   - Gradient backgrounds and backdrop blur effects throughout UI
+   - Improved micro-interactions for professional user experience
 
 ## 🎯 Current State
 
 ### Fully Functional Features
 ✅ Draggable widgets with collision detection  
 ✅ Resizable widgets with smooth animations  
-✅ Three widget types (basic, chart, metric)  
-✅ Collapsible sidebar with creation tools  
-✅ Professional styling and animations  
+✅ Four widget types (basic, chart, metric, funnel)  
+✅ Collapsible sidebar with glassmorphic creation tools  
+✅ Professional styling and animations with Arial Rounded MT typography
 ✅ Metric widget blur effects during resize  
 ✅ Responsive metric layouts (1×1 vs 2×1)  
 ✅ Scrollable canvas with dynamic sizing  
+✅ **NEW**: Funnel chart widgets with "Expiring Waivers" functionality
+✅ **NEW**: Advanced search system with real-time filtering
+✅ **NEW**: Modern glassmorphic card-based widget creation interface
+✅ **NEW**: Sophisticated hover animations and micro-interactions
+✅ **NEW**: Comprehensive keyword-based search functionality
 
 ### Sample Data
 - **Metrics**: "This Month", "Total Users", "Revenue", "Conversion", "Sessions"
 - **Charts**: Monthly sales vs expenses data
-- **Colors**: Professional color palette with proper contrast
+- **Funnels**: Website conversion flow (Visitors → Product Views → Cart → Checkout → Purchase)
+- **Colors**: Professional color palette with proper contrast and gradient themes
 
 ## 🔮 Future Enhancement Ideas
 
@@ -230,6 +288,26 @@ npm run build
 }
 ```
 
+### Funnel Chart Widget
+```javascript
+{
+  id: 4,
+  x: 350, y: 90,
+  width: 300, height: 300,
+  size: '2x2',
+  type: 'funnel',
+  funnelData: [
+    { id: 'step_1', value: 1000, label: 'Website Visitors' },
+    { id: 'step_2', value: 800, label: 'Product Views' },
+    { id: 'step_3', value: 600, label: 'Add to Cart' },
+    { id: 'step_4', value: 400, label: 'Checkout' },
+    { id: 'step_5', value: 200, label: 'Purchase' }
+  ],
+  isDragging: false,
+  isResizing: false
+}
+```
+
 ## 🎨 CSS Architecture
 
 ### Key Classes
@@ -239,12 +317,23 @@ npm run build
 - `.metric-expanded` - 2×1 horizontal layout
 - `.resize-handle` - Resize interaction area
 - `.hackathon-credit` - Bottom-right attribution
+- **NEW**: `.widget-cards-grid` - 2×2 grid layout for widget creation cards
+- **NEW**: `.widget-card` - Individual glassmorphic widget selection cards
+- **NEW**: `.widget-card-icon` - Themed icon containers with hover animations
+- **NEW**: `.search-input` - Capsule-shaped search bar with blur effects
+- **NEW**: `.funnel-content` - Responsive funnel chart container
+- **NEW**: `.funnel-title` - Clean overlay title for funnel widgets
 
 ### Animation System
 - Smooth cubic-bezier transitions
 - Hover state management
 - Blur effects for interactive feedback
 - Scale animations for widget creation
+- **NEW**: Glassmorphism effects with backdrop filters
+- **NEW**: Card hover animations (scale, rotation, color transitions)
+- **NEW**: Search input focus animations with translateY effects
+- **NEW**: Gradient background transitions on widget cards
+- **NEW**: Sophisticated micro-interactions throughout the interface
 
 ---
 
