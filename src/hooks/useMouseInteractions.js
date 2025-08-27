@@ -1,0 +1,185 @@
+import { useCallback } from 'react'
+import { WIDGET_SIZES, GRID_SIZE } from '../constants/widgetConstants'
+
+export const useMouseInteractions = (widgetManagement) => {
+  const {
+    rectangles,
+    setRectangles,
+    dragState,
+    setDragState,
+    resizeState,
+    setResizeState,
+    findValidPosition,
+    getCanvasBounds,
+    getClosestSize
+  } = widgetManagement
+
+  const handleResizeStart = useCallback((e, rectId) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    const rect = rectangles.find(r => r.id === rectId)
+    if (!rect || rect.type === 'chart' || rect.type === 'funnel') return
+
+    setResizeState({
+      id: rectId,
+      startX: e.clientX,
+      startY: e.clientY,
+      startWidth: rect.width,
+      startHeight: rect.height
+    })
+
+    setRectangles(prev => prev.map(r => 
+      r.id === rectId ? { ...r, isResizing: true } : r
+    ))
+  }, [rectangles, setRectangles, setResizeState])
+
+  const handleMouseDown = useCallback((e, rectId) => {
+    e.preventDefault()
+    const rect = rectangles.find(r => r.id === rectId)
+    if (!rect) return
+
+    setDragState({
+      id: rectId,
+      offsetX: e.clientX - rect.x,
+      offsetY: e.clientY - rect.y
+    })
+
+    setRectangles(prev => prev.map(r => 
+      r.id === rectId ? { ...r, isDragging: true } : r
+    ))
+  }, [rectangles, setDragState, setRectangles])
+
+  const handleMouseMove = useCallback((e) => {
+    if (dragState.id && !resizeState.id) {
+      const movingRect = rectangles.find(r => r.id === dragState.id)
+      if (!movingRect) return
+
+      const newX = e.clientX - dragState.offsetX
+      const newY = e.clientY - dragState.offsetY
+      const otherRects = rectangles.filter(r => r.id !== dragState.id)
+      
+      const validPosition = findValidPosition(movingRect, newX, newY, otherRects)
+
+      setRectangles(prev => prev.map(r => 
+        r.id === dragState.id ? { ...r, x: validPosition.x, y: validPosition.y } : r
+      ))
+    }
+
+    if (resizeState.id) {
+      const resizingRect = rectangles.find(r => r.id === resizeState.id)
+      if (!resizingRect || resizingRect.type === 'chart' || resizingRect.type === 'funnel') return
+
+      const deltaX = e.clientX - resizeState.startX
+      const deltaY = e.clientY - resizeState.startY
+      
+      let newWidth = Math.max(GRID_SIZE, resizeState.startWidth + deltaX)
+      let newHeight = Math.max(GRID_SIZE, resizeState.startHeight + deltaY)
+
+      // Calculate maximum safe dimensions
+      const canvas = getCanvasBounds()
+      const padding = 10
+      let maxSafeWidth = canvas.width - resizingRect.x - padding
+      let maxSafeHeight = canvas.height - resizingRect.y - padding
+
+      // Find blocking obstacles in each direction
+      const otherRects = rectangles.filter(r => r.id !== resizeState.id)
+      
+      for (const other of otherRects) {
+        // Check if this widget blocks rightward expansion
+        if (other.x > resizingRect.x) {
+          // Check for vertical overlap with the current widget
+          const currentBottom = resizingRect.y + resizingRect.height
+          const currentTop = resizingRect.y
+          const otherBottom = other.y + other.height
+          const otherTop = other.y
+          
+          const verticalOverlap = !(currentBottom <= otherTop || currentTop >= otherBottom)
+          
+          if (verticalOverlap) {
+            maxSafeWidth = Math.min(maxSafeWidth, other.x - resizingRect.x)
+          }
+        }
+        
+        // Check if this widget blocks downward expansion
+        if (other.y > resizingRect.y) {
+          // Check for horizontal overlap with the current widget
+          const currentRight = resizingRect.x + resizingRect.width
+          const currentLeft = resizingRect.x
+          const otherRight = other.x + other.width
+          const otherLeft = other.x
+          
+          const horizontalOverlap = !(currentRight <= otherLeft || currentLeft >= otherRight)
+          
+          if (horizontalOverlap) {
+            maxSafeHeight = Math.min(maxSafeHeight, other.y - resizingRect.y)
+          }
+        }
+      }
+
+      // Apply constraints
+      newWidth = Math.min(newWidth, maxSafeWidth)
+      newHeight = Math.min(newHeight, maxSafeHeight)
+      
+      // Ensure minimum size
+      newWidth = Math.max(GRID_SIZE, newWidth)
+      newHeight = Math.max(GRID_SIZE, newHeight)
+
+      setRectangles(prev => prev.map(r => 
+        r.id === resizeState.id ? { 
+          ...r, 
+          width: newWidth,
+          height: newHeight
+        } : r
+      ))
+    }
+  }, [dragState, resizeState, rectangles, findValidPosition, getCanvasBounds, setRectangles])
+
+  const handleMouseUp = useCallback(() => {
+    if (resizeState.id) {
+      const rect = rectangles.find(r => r.id === resizeState.id)
+      if (rect && rect.type !== 'chart' && rect.type !== 'funnel') {
+        // Find the best fitting grid size for current dimensions
+        let closestSize = getClosestSize(rect.width, rect.height)
+        
+        // For metric widgets, restrict to only 1x1 and 2x1
+        if (rect.type === 'metric') {
+          const validMetricSizes = ['1x1', '2x1']
+          const currentSize = closestSize
+          if (!validMetricSizes.includes(currentSize)) {
+            // If current size is not valid for metrics, pick the closest valid one
+            const distance1x1 = Math.abs(rect.width - WIDGET_SIZES['1x1'].width) + Math.abs(rect.height - WIDGET_SIZES['1x1'].height)
+            const distance2x1 = Math.abs(rect.width - WIDGET_SIZES['2x1'].width) + Math.abs(rect.height - WIDGET_SIZES['2x1'].height)
+            closestSize = distance1x1 < distance2x1 ? '1x1' : '2x1'
+          }
+        }
+        
+        const finalDimensions = WIDGET_SIZES[closestSize]
+        
+        // Since drag logic prevents collisions, just snap to closest size
+        setRectangles(prev => prev.map(r => 
+          r.id === resizeState.id ? { 
+            ...r, 
+            width: finalDimensions.width,
+            height: finalDimensions.height,
+            size: closestSize,
+            gridCols: finalDimensions.cols,
+            gridRows: finalDimensions.rows,
+            isResizing: false
+          } : r
+        ))
+      }
+    }
+
+    setDragState({ id: null, offsetX: 0, offsetY: 0 })
+    setResizeState({ id: null, startX: 0, startY: 0, startWidth: 0, startHeight: 0 })
+    setRectangles(prev => prev.map(r => ({ ...r, isDragging: false, isResizing: false })))
+  }, [resizeState, rectangles, getClosestSize, setDragState, setResizeState, setRectangles])
+
+  return {
+    handleResizeStart,
+    handleMouseDown,
+    handleMouseMove,
+    handleMouseUp
+  }
+}
