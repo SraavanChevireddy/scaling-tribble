@@ -4,6 +4,7 @@ import { ResponsiveFunnel } from '@nivo/funnel'
 import './App.css'
 
 const GRID_SIZE = 150
+const TITLE_AREA_HEIGHT = 80 // Reserved height for title areas at the top
 const WIDGET_SIZES = {
   '1x1': { cols: 1, rows: 1, width: GRID_SIZE, height: GRID_SIZE },
   '2x1': { cols: 2, rows: 1, width: GRID_SIZE * 2, height: GRID_SIZE },
@@ -53,8 +54,7 @@ function App() {
   }, [])
 
   const getCanvasBounds = useCallback(() => {
-    const sidebarWidth = sidebarCollapsed ? 80 : 290
-    const canvasWidth = window.innerWidth - sidebarWidth
+    const canvasWidth = window.innerWidth
     
     // Calculate required height based on widgets
     const maxY = rectangles.reduce((max, rect) => {
@@ -63,17 +63,18 @@ function App() {
     
     return {
       width: canvasWidth,
-      height: Math.max(window.innerHeight - 20, maxY)
+      height: Math.max(window.innerHeight, maxY)
     }
-  }, [sidebarCollapsed, rectangles])
+  }, [rectangles])
 
   const findValidPosition = useCallback((movingRect, newX, newY, otherRects) => {
     const canvas = getCanvasBounds()
     const padding = 10
     const widgetPadding = 10
+    const minY = TITLE_AREA_HEIGHT + padding // Minimum Y to stay below title areas
     
     let validX = Math.max(padding, Math.min(newX, canvas.width - movingRect.width - padding))
-    let validY = Math.max(padding, Math.min(newY, canvas.height - movingRect.height - padding))
+    let validY = Math.max(minY, Math.min(newY, canvas.height - movingRect.height - padding))
     
     const testRect = { ...movingRect, x: validX, y: validY }
 
@@ -101,7 +102,7 @@ function App() {
           validY = moveUp ? 
             other.y + other.height + widgetPadding : 
             other.y - testRect.height - widgetPadding
-          validY = Math.max(padding, Math.min(validY, canvas.height - testRect.height - padding))
+          validY = Math.max(minY, Math.min(validY, canvas.height - testRect.height - padding))
         }
         
         testRect.x = validX
@@ -146,10 +147,10 @@ function App() {
   }, [])
 
   const findNextGridPosition = useCallback((widgetCols, widgetRows, existingRects) => {
-    const sidebarWidth = sidebarCollapsed ? 80 : 290
-    const canvasWidth = window.innerWidth - sidebarWidth
+    const canvasWidth = window.innerWidth
     const padding = 10
     const widgetPadding = 10 // Padding between widgets
+    const startY = TITLE_AREA_HEIGHT + padding // Start below title areas
     
     // Calculate grid dimensions (including padding between widgets)
     const gridCols = Math.floor((canvasWidth - padding * 2) / (GRID_SIZE + widgetPadding))
@@ -161,7 +162,7 @@ function App() {
     // Mark occupied slots based on existing widgets
     existingRects.forEach(rect => {
       const startCol = Math.round((rect.x - padding) / (GRID_SIZE + widgetPadding))
-      const startRow = Math.round((rect.y - padding) / (GRID_SIZE + widgetPadding))
+      const startRow = Math.round((rect.y - startY) / (GRID_SIZE + widgetPadding))
       const rectCols = rect.gridCols || 1
       const rectRows = rect.gridRows || 1
       
@@ -191,15 +192,15 @@ function App() {
         if (canFit) {
           return {
             x: padding + col * (GRID_SIZE + widgetPadding),
-            y: padding + row * (GRID_SIZE + widgetPadding)
+            y: startY + row * (GRID_SIZE + widgetPadding)
           }
         }
       }
     }
     
-    // Fallback to top-left if no space found
-    return { x: padding, y: padding }
-  }, [sidebarCollapsed])
+    // Fallback to below title area if no space found
+    return { x: padding, y: startY }
+  }, [])
 
   const addNewRectangle = useCallback(() => {
     const newId = Math.max(...rectangles.map(r => r.id), 0) + 1
@@ -311,6 +312,13 @@ function App() {
     
     setRectangles(prev => [...prev, newFunnel])
     
+    // Force a re-render after a short delay to ensure proper sizing
+    setTimeout(() => {
+      setRectangles(prev => prev.map(r => 
+        r.id === newId ? { ...r, isNew: false, forceUpdate: Date.now() } : r
+      ))
+    }, 100)
+    
     // Remove the "new" flag after animation completes
     setTimeout(() => {
       setRectangles(prev => prev.map(r => 
@@ -327,7 +335,7 @@ function App() {
           behavior: 'smooth'
         })
       }
-    }, 100)
+    }, 200)
   }, [rectangles, findNextGridPosition])
 
   const addNewMetric = useCallback((metricSize = '1x1') => {
@@ -537,16 +545,27 @@ function App() {
   }, [resizeState, rectangles, getClosestSize])
 
   return (
-    <div className="app-container">
-      <div className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
+    <div className={`app-container ${sidebarCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'}`}>
+      <div className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`} onClick={sidebarCollapsed ? () => setSidebarCollapsed(false) : undefined}>
         <div className="sidebar-header">
-          {!sidebarCollapsed && <h3 className="sidebar-title">Customize</h3>}
-          <button 
-            className="collapse-btn"
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-          >
-            {sidebarCollapsed ? '☰' : '←'}
-          </button>
+          {!sidebarCollapsed && (
+            <div className="sidebar-title-section">
+              <h3 className="sidebar-title">Waiver Explorer</h3>
+              <p className="sidebar-subtitle">Flexi Reports</p>
+            </div>
+          )}
+          {sidebarCollapsed ? (
+            <button className="sidebar-icon-button">
+              ☰
+            </button>
+          ) : (
+            <button 
+              className="collapse-btn"
+              onClick={() => setSidebarCollapsed(true)}
+            >
+              ←
+            </button>
+          )}
         </div>
         
         {!sidebarCollapsed && (
@@ -615,9 +634,15 @@ function App() {
         )}
       </div>
       
+      <div className="right-title-area">
+        <div className="right-title-section">
+          <h3 className="right-title">Waiver Explorer</h3>
+        </div>
+      </div>
+      
       <div 
         ref={canvasRef}
-        className={`canvas ${sidebarCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'}`}
+        className="canvas"
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
@@ -721,22 +746,25 @@ function App() {
                     <div className="widget-info chart-info">
                       <span className="size-label">Funnel Chart</span>
                     </div>
-                    <div className={`funnel-content ${rect.isDragging ? 'blurred' : ''}`} style={{ height: `${rect.height - 40}px`, width: '100%' }}>
+                    <div className={`funnel-content ${rect.isDragging ? 'blurred' : ''}`} style={{ height: `${rect.height - 20}px`, width: `${rect.width - 20}px`, position: 'relative' }}>
                       <ResponsiveFunnel
+                        key={`funnel-${rect.id}-${rect.forceUpdate || 0}`}
                         data={rect.funnelData}
-                        margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
+                        margin={{ top: 10, right: 15, bottom: 10, left: 15 }}
                         valueFormat=">-.4s"
                         colors={{ scheme: 'spectral' }}
-                        borderWidth={10}
+                        borderWidth={4}
                         labelColor={{ from: 'color', modifiers: [['darker', 3]] }}
                         enableAfterSeparators={false}
                         enableBeforeSeparators={false}
-                        beforeSeparatorLength={250}
-                        beforeSeparatorOffset={5}
-                        afterSeparatorLength={250}
-                        afterSeparatorOffset={5}
-                        currentPartSizeExtension={3}
-                        currentBorderWidth={15}
+                        beforeSeparatorLength={80}
+                        beforeSeparatorOffset={1}
+                        afterSeparatorLength={80}
+                        afterSeparatorOffset={1}
+                        currentPartSizeExtension={0}
+                        currentBorderWidth={6}
+                        shapeBlending={0.66}
+                        fillOpacity={0.85}
                       />
                     </div>
                   </div>
