@@ -743,14 +743,14 @@ function App() {
               ) : rect.type === 'funnel' ? (
                 <>
                   <div className="chart-container">
-                    <div className="widget-info chart-info">
-                      <span className="size-label">Funnel Chart</span>
+                    <div className="funnel-title">
+                      <span>Expiring Waivers</span>
                     </div>
-                    <div className={`funnel-content ${rect.isDragging ? 'blurred' : ''}`} style={{ height: `${rect.height - 20}px`, width: `${rect.width - 20}px`, position: 'relative' }}>
+                    <div className={`funnel-content ${rect.isDragging ? 'blurred' : ''}`} style={{ height: `${rect.height - 50}px`, width: `${rect.width - 20}px`, position: 'relative' }}>
                       <ResponsiveFunnel
                         key={`funnel-${rect.id}-${rect.forceUpdate || 0}`}
                         data={rect.funnelData}
-                        margin={{ top: 10, right: 15, bottom: 10, left: 15 }}
+                        margin={{ top: 30, right: 15, bottom: 10, left: 15 }}
                         valueFormat=">-.4s"
                         colors={{ scheme: 'spectral' }}
                         borderWidth={4}
