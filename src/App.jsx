@@ -44,6 +44,7 @@ function App() {
   const [dragState, setDragState] = useState({ id: null, offsetX: 0, offsetY: 0 })
   const [resizeState, setResizeState] = useState({ id: null, handle: null, startX: 0, startY: 0, startWidth: 0, startHeight: 0 })
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
   const canvasRef = useRef(null)
 
   const checkCollision = useCallback((rect1, rect2) => {
@@ -544,6 +545,72 @@ function App() {
     setRectangles(prev => prev.map(r => ({ ...r, isDragging: false, isResizing: false })))
   }, [resizeState, rectangles, getClosestSize])
 
+  const widgetOptions = [
+    {
+      id: 'basic',
+      title: 'Basic Widget',
+      subtitle: '1×1 Size',
+      keywords: ['basic', 'widget', 'simple', '1x1'],
+      action: addNewRectangle,
+      icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2"/>
+          <path d="M12 8v8M8 12h8" stroke="currentColor" strokeWidth="2"/>
+        </svg>
+      ),
+      iconClass: ''
+    },
+    {
+      id: 'metric',
+      title: 'Metric Widget',
+      subtitle: 'KPI Display',
+      keywords: ['metric', 'kpi', 'display', 'number', 'analytics'],
+      action: () => addNewMetric('1x1'),
+      icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M3 12l2-2 4 4 6-6 6 2v6H3v-4z" fill="currentColor" opacity="0.2"/>
+          <path d="M3 12l2-2 4 4 6-6 6 2" stroke="currentColor" strokeWidth="2" fill="none"/>
+        </svg>
+      ),
+      iconClass: 'metric-icon'
+    },
+    {
+      id: 'chart',
+      title: 'Bar Chart',
+      subtitle: '3×3 Size',
+      keywords: ['chart', 'bar', 'graph', 'data', 'visualization', '3x3'],
+      action: addNewChart,
+      icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2"/>
+          <rect x="7" y="13" width="2" height="5" fill="currentColor"/>
+          <rect x="11" y="9" width="2" height="9" fill="currentColor"/>
+          <rect x="15" y="6" width="2" height="12" fill="currentColor"/>
+        </svg>
+      ),
+      iconClass: 'chart-icon'
+    },
+    {
+      id: 'funnel',
+      title: 'Expiring Waivers',
+      subtitle: '2×2 Funnel',
+      keywords: ['funnel', 'waiver', 'expiring', '2x2', 'flow', 'conversion'],
+      action: addNewFunnel,
+      icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M6 3h12l-2 4H8l-2-4zM8 7h8l-1.5 3H9.5L8 7zM9.5 10h5l-1 2h-3l-1-2zM10.5 12h3l-0.5 1h-2l-0.5-1z" fill="currentColor"/>
+        </svg>
+      ),
+      iconClass: 'funnel-icon'
+    }
+  ]
+
+  const filteredWidgets = widgetOptions.filter(widget =>
+    widget.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    widget.subtitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    widget.keywords.some(keyword => keyword.toLowerCase().includes(searchTerm.toLowerCase()))
+  )
+
   return (
     <div className={`app-container ${sidebarCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'}`}>
       <div className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`} onClick={sidebarCollapsed ? () => setSidebarCollapsed(false) : undefined}>
@@ -573,62 +640,34 @@ function App() {
             <div className="search-container">
               <input 
                 type="text" 
-                placeholder="Search" 
+                placeholder="Search widgets..." 
                 className="search-input"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
             
             <div className="sidebar-section">
-              <h4>Widget Tools</h4>
-              <div className="tool-item">
-                <strong>Drag:</strong> Move widgets around
-              </div>
-              <div className="tool-item">
-                <strong>Resize:</strong> Drag bottom-right corner
-              </div>
-              <div className="tool-item">
-                <strong>Hover:</strong> Show resize handle
-              </div>
-            </div>
-            
-            <div className="sidebar-section">
               <h4>Add Widget</h4>
-              <button 
-                className="add-widget-btn"
-                onClick={addNewRectangle}
-              >
-                + Add 1×1 Widget
-              </button>
-              <button 
-                className="add-chart-btn"
-                onClick={addNewChart}
-              >
-                📊 Add Chart
-              </button>
-              <button 
-                className="add-metric-btn"
-                onClick={() => addNewMetric('1x1')}
-              >
-                📈 Add Metric Widget
-              </button>
-              <button 
-                className="add-funnel-btn"
-                onClick={addNewFunnel}
-              >
-                🔻 Add Funnel Chart
-              </button>
-            </div>
-            
-            <div className="sidebar-section">
-              <h4>Available Sizes</h4>
-              <div className="size-options">
-                <div className="size-option">1×1 • 150×150px</div>
-                <div className="size-option">2×1 • 300×150px</div>
-                <div className="size-option">1×2 • 150×300px</div>
-                <div className="size-option">2×2 • 300×300px</div>
-                <div className="size-option">3×1 • 450×150px</div>
-                <div className="size-option chart-size">3×3 • 450×450px (Charts)</div>
+              <div className="widget-cards-grid">
+                {filteredWidgets.map(widget => (
+                  <div key={widget.id} className="widget-card" onClick={widget.action}>
+                    <div className={`widget-card-icon ${widget.iconClass}`}>
+                      {widget.icon}
+                    </div>
+                    <div className="widget-card-info">
+                      <h5>{widget.title}</h5>
+                      <span>{widget.subtitle}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
+              {filteredWidgets.length === 0 && searchTerm && (
+                <div className="no-results">
+                  <p>No widgets found for "{searchTerm}"</p>
+                  <span>Try searching for: basic, metric, chart, funnel, or waiver</span>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -743,14 +782,14 @@ function App() {
               ) : rect.type === 'funnel' ? (
                 <>
                   <div className="chart-container">
-                    <div className="widget-info chart-info">
-                      <span className="size-label">Funnel Chart</span>
+                    <div className="funnel-title">
+                      <span>Expiring Waivers</span>
                     </div>
-                    <div className={`funnel-content ${rect.isDragging ? 'blurred' : ''}`} style={{ height: `${rect.height - 20}px`, width: `${rect.width - 20}px`, position: 'relative' }}>
+                    <div className={`funnel-content ${rect.isDragging ? 'blurred' : ''}`} style={{ height: `${rect.height - 50}px`, width: `${rect.width - 20}px`, position: 'relative' }}>
                       <ResponsiveFunnel
                         key={`funnel-${rect.id}-${rect.forceUpdate || 0}`}
                         data={rect.funnelData}
-                        margin={{ top: 10, right: 15, bottom: 10, left: 15 }}
+                        margin={{ top: 30, right: 15, bottom: 10, left: 15 }}
                         valueFormat=">-.4s"
                         colors={{ scheme: 'spectral' }}
                         borderWidth={4}
