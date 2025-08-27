@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useWidgetManagement } from './hooks/useWidgetManagement'
 import { useMouseInteractions } from './hooks/useMouseInteractions'
 import Sidebar from './components/Sidebar'
@@ -6,21 +6,38 @@ import Widget from './components/Widget'
 import DataRangeFilter from './components/DataRangeFilter'
 import WaiverFilter from './components/WaiverFilter'
 import ExpirationFilter from './components/ExpirationFilter'
+import GetStartedDialog from './components/GetStartedDialog'
 import './App.css'
 import './styles/api-widgets.css'
 
 function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [showGetStarted, setShowGetStarted] = useState(false)
   const [selectedDataRange, setSelectedDataRange] = useState(null)
   const [selectedWaiver, setSelectedWaiver] = useState(null)
   const [selectedExpiration, setSelectedExpiration] = useState(null)
   
+  // Check if Get Started dialog should be shown
+  useEffect(() => {
+    const hasSeenGetStarted = sessionStorage.getItem('flexiReport_hasSeenGetStarted')
+    if (!hasSeenGetStarted) {
+      setShowGetStarted(true)
+    }
+  }, [])
+
+  // Handle Get Started dialog close
+  const handleGetStartedClose = () => {
+    setShowGetStarted(false)
+    sessionStorage.setItem('flexiReport_hasSeenGetStarted', 'true')
+  }
+
   // Use custom hooks for widget management and interactions
   const widgetManagement = useWidgetManagement()
   const mouseInteractions = useMouseInteractions(widgetManagement)
   
   const { 
     rectangles, 
+    setRectangles,
     canvasRef, 
     getCanvasBounds, 
     addNewRectangle, 
@@ -61,13 +78,12 @@ function App() {
         <div className="right-title-section">
           <h3 className="right-title">Waiver Explorer</h3>
         </div>
-      </div>
-      
-      <div className="filter-container">
-        <div className="filters-wrapper">
-          <DataRangeFilter onRangeChange={setSelectedDataRange} />
-          <WaiverFilter onWaiverChange={setSelectedWaiver} />
-          <ExpirationFilter onExpirationChange={setSelectedExpiration} />
+        <div className="filter-container">
+          <div className="filters-wrapper">
+            <DataRangeFilter onRangeChange={setSelectedDataRange} />
+            <WaiverFilter onWaiverChange={setSelectedWaiver} />
+            <ExpirationFilter onExpirationChange={setSelectedExpiration} />
+          </div>
         </div>
       </div>
       
@@ -100,6 +116,11 @@ function App() {
       <div className="hackathon-credit">
         Built with ❤️ for Hackathon by SonaType India
       </div>
+
+      <GetStartedDialog 
+        isOpen={showGetStarted} 
+        onClose={handleGetStartedClose} 
+      />
     </div>
   )
 }

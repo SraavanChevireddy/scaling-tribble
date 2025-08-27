@@ -6,6 +6,8 @@ import MetricWidget from './MetricWidget'
 import ApiChartWidget from './ApiChartWidget'
 import ApiFunnelWidget from './ApiFunnelWidget'
 import ApiMetricWidget from './ApiMetricWidget'
+import WidgetMenu from './WidgetMenu'
+import WidgetModal from './WidgetModal'
 
 const Widget = ({ rect, handleMouseDown, handleResizeStart, onDeleteWidget }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
