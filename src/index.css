@@ -9,6 +9,7 @@ html, body {
   height: 100%;
   background-color: white;
   overflow: hidden;
+  font-family: "Arial Rounded MT", "Arial Rounded MT Bold", Helvetica, Arial, sans-serif;
 }
 
 #root {
