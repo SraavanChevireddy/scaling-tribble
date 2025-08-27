@@ -3,9 +3,12 @@ import { ResponsiveBar } from '@nivo/bar'
 const ChartWidget = ({ rect }) => {
   return (
     <div className="chart-container">
-      <div className="widget-info chart-info">
-        <span className="size-label">Bar Chart</span>
-      </div>
+      {/* Only show info label when not in expanded view */}
+      {!rect.expandedView && (
+        <div className="widget-info chart-info">
+          <span className="size-label">Bar Chart</span>
+        </div>
+      )}
       <ResponsiveBar
         data={rect.chartData}
         keys={['sales', 'expenses']}

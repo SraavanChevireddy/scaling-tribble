@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import BasicWidget from './BasicWidget'
 import ChartWidget from './ChartWidget'
 import FunnelWidget from './FunnelWidget'
@@ -6,7 +7,9 @@ import ApiChartWidget from './ApiChartWidget'
 import ApiFunnelWidget from './ApiFunnelWidget'
 import ApiMetricWidget from './ApiMetricWidget'
 
-const Widget = ({ rect, handleMouseDown, handleResizeStart }) => {
+const Widget = ({ rect, handleMouseDown, handleResizeStart, onDeleteWidget }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
   const renderWidgetContent = () => {
     switch (rect.type) {
       case 'chart':
@@ -26,23 +29,44 @@ const Widget = ({ rect, handleMouseDown, handleResizeStart }) => {
     }
   }
 
+  const handleDelete = (id) => {
+    if (onDeleteWidget) {
+      onDeleteWidget(id);
+    }
+  };
+
+  const handleExpand = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
   return (
-    <div
-      key={rect.id}
-      className={`draggable-rectangle ${rect.isDragging ? 'dragging' : ''} ${rect.isResizing ? 'resizing' : ''} ${rect.isNew ? 'new-widget' : ''} ${rect.type === 'chart' || rect.type === 'funnel' ? 'chart-widget' : ''}`}
-      style={{
-        left: `${rect.x}px`,
-        top: `${rect.y}px`,
-        width: `${rect.width}px`,
-        height: `${rect.height}px`,
-        backgroundColor: rect.color,
-        cursor: rect.isDragging ? 'grabbing' : 'grab',
-        zIndex: rect.isDragging || rect.isResizing ? 10 : 1
-      }}
-      onMouseDown={(e) => handleMouseDown(e, rect.id)}
-    >
-      {renderWidgetContent()}
-    </div>
+    <>
+      <div
+        key={rect.id}
+        className={`draggable-rectangle ${rect.isDragging ? 'dragging' : ''} ${rect.isResizing ? 'resizing' : ''} ${rect.isNew ? 'new-widget' : ''} ${rect.type === 'chart' || rect.type === 'funnel' ? 'chart-widget' : ''}`}
+        style={{
+          left: `${rect.x}px`,
+          top: `${rect.y}px`,
+          width: `${rect.width}px`,
+          height: `${rect.height}px`,
+          backgroundColor: rect.color,
+          cursor: rect.isDragging ? 'grabbing' : 'grab',
+          zIndex: rect.isDragging || rect.isResizing ? 10 : 1
+        }}
+        onMouseDown={(e) => handleMouseDown(e, rect.id)}
+      >
+        <WidgetMenu rect={rect} onDelete={handleDelete} onExpand={handleExpand} />
+        {renderWidgetContent()}
+      </div>
+      
+      {isModalOpen && (
+        <WidgetModal widget={rect} onClose={handleCloseModal} />
+      )}
+    </>
   )
 }
 
