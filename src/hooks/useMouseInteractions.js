@@ -10,6 +10,7 @@ export const useMouseInteractions = (widgetManagement) => {
     resizeState,
     setResizeState,
     findValidPosition,
+    validateResizeOperation,
     getCanvasBounds,
     getClosestSize
   } = widgetManagement
@@ -19,7 +20,8 @@ export const useMouseInteractions = (widgetManagement) => {
     e.stopPropagation()
     
     const rect = rectangles.find(r => r.id === rectId)
-    if (!rect || rect.type === 'chart' || rect.type === 'funnel') return
+    if (!rect || rect.type === 'chart' || rect.type === 'funnel' || 
+        rect.type === 'api-chart' || rect.type === 'api-funnel') return
 
     setResizeState({
       id: rectId,
@@ -68,77 +70,33 @@ export const useMouseInteractions = (widgetManagement) => {
 
     if (resizeState.id) {
       const resizingRect = rectangles.find(r => r.id === resizeState.id)
-      if (!resizingRect || resizingRect.type === 'chart' || resizingRect.type === 'funnel') return
+      if (!resizingRect || resizingRect.type === 'chart' || resizingRect.type === 'funnel' || 
+          resizingRect.type === 'api-chart' || resizingRect.type === 'api-funnel') return
 
       const deltaX = e.clientX - resizeState.startX
       const deltaY = e.clientY - resizeState.startY
       
-      let newWidth = Math.max(GRID_SIZE, resizeState.startWidth + deltaX)
-      let newHeight = Math.max(GRID_SIZE, resizeState.startHeight + deltaY)
-
-      // Calculate maximum safe dimensions
-      const canvas = getCanvasBounds()
-      const padding = 10
-      let maxSafeWidth = canvas.width - resizingRect.x - padding
-      let maxSafeHeight = canvas.height - resizingRect.y - padding
-
-      // Find blocking obstacles in each direction
+      const desiredWidth = Math.max(GRID_SIZE, resizeState.startWidth + deltaX)
+      const desiredHeight = Math.max(GRID_SIZE, resizeState.startHeight + deltaY)
+      
       const otherRects = rectangles.filter(r => r.id !== resizeState.id)
-      
-      for (const other of otherRects) {
-        // Check if this widget blocks rightward expansion
-        if (other.x > resizingRect.x) {
-          // Check for vertical overlap with the current widget
-          const currentBottom = resizingRect.y + resizingRect.height
-          const currentTop = resizingRect.y
-          const otherBottom = other.y + other.height
-          const otherTop = other.y
-          
-          const verticalOverlap = !(currentBottom <= otherTop || currentTop >= otherBottom)
-          
-          if (verticalOverlap) {
-            maxSafeWidth = Math.min(maxSafeWidth, other.x - resizingRect.x)
-          }
-        }
-        
-        // Check if this widget blocks downward expansion
-        if (other.y > resizingRect.y) {
-          // Check for horizontal overlap with the current widget
-          const currentRight = resizingRect.x + resizingRect.width
-          const currentLeft = resizingRect.x
-          const otherRight = other.x + other.width
-          const otherLeft = other.x
-          
-          const horizontalOverlap = !(currentRight <= otherLeft || currentLeft >= otherRight)
-          
-          if (horizontalOverlap) {
-            maxSafeHeight = Math.min(maxSafeHeight, other.y - resizingRect.y)
-          }
-        }
-      }
-
-      // Apply constraints
-      newWidth = Math.min(newWidth, maxSafeWidth)
-      newHeight = Math.min(newHeight, maxSafeHeight)
-      
-      // Ensure minimum size
-      newWidth = Math.max(GRID_SIZE, newWidth)
-      newHeight = Math.max(GRID_SIZE, newHeight)
+      const validDimensions = validateResizeOperation(resizingRect, desiredWidth, desiredHeight, otherRects)
 
       setRectangles(prev => prev.map(r => 
         r.id === resizeState.id ? { 
           ...r, 
-          width: newWidth,
-          height: newHeight
+          width: validDimensions.width,
+          height: validDimensions.height
         } : r
       ))
     }
-  }, [dragState, resizeState, rectangles, findValidPosition, getCanvasBounds, setRectangles])
+  }, [dragState, resizeState, rectangles, findValidPosition, validateResizeOperation, setRectangles])
 
   const handleMouseUp = useCallback(() => {
     if (resizeState.id) {
       const rect = rectangles.find(r => r.id === resizeState.id)
-      if (rect && rect.type !== 'chart' && rect.type !== 'funnel') {
+      if (rect && rect.type !== 'chart' && rect.type !== 'funnel' && 
+          rect.type !== 'api-chart' && rect.type !== 'api-funnel') {
         // Find the best fitting grid size for current dimensions
         let closestSize = getClosestSize(rect.width, rect.height)
         

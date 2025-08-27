@@ -7,11 +7,26 @@ export const useWidgetManagement = () => {
   const [resizeState, setResizeState] = useState({ id: null, handle: null, startX: 0, startY: 0, startWidth: 0, startHeight: 0 })
   const canvasRef = useRef(null)
 
-  const checkCollision = useCallback((rect1, rect2) => {
-    return !(rect1.x + rect1.width <= rect2.x || 
-             rect2.x + rect2.width <= rect1.x || 
-             rect1.y + rect1.height <= rect2.y || 
-             rect2.y + rect2.height <= rect1.y)
+  const checkCollision = useCallback((rect1, rect2, padding = 0) => {
+    // Add padding to create buffer zones between widgets
+    const r1 = {
+      x: rect1.x - padding,
+      y: rect1.y - padding,
+      width: rect1.width + padding * 2,
+      height: rect1.height + padding * 2
+    }
+    const r2 = {
+      x: rect2.x - padding,
+      y: rect2.y - padding,
+      width: rect2.width + padding * 2,
+      height: rect2.height + padding * 2
+    }
+    
+    // Robust AABB collision detection
+    return !(r1.x >= r2.x + r2.width || 
+             r1.x + r1.width <= r2.x || 
+             r1.y >= r2.y + r2.height || 
+             r1.y + r1.height <= r2.y)
   }, [])
 
   const getCanvasBounds = useCallback(() => {
@@ -28,50 +43,97 @@ export const useWidgetManagement = () => {
     }
   }, [rectangles])
 
-  const findValidPosition = useCallback((movingRect, newX, newY, otherRects) => {
+  const findValidPosition = useCallback((movingRect, desiredX, desiredY, otherRects) => {
     const canvas = getCanvasBounds()
-    const padding = 10
-    const widgetPadding = 10
-    const minY = TITLE_AREA_HEIGHT + padding // Minimum Y to stay below title areas
+    const edgePadding = 10
+    const widgetPadding = 12 // Increased for better spacing
+    const minY = TITLE_AREA_HEIGHT + edgePadding
     
-    let validX = Math.max(padding, Math.min(newX, canvas.width - movingRect.width - padding))
-    let validY = Math.max(minY, Math.min(newY, canvas.height - movingRect.height - padding))
+    // Constrain to canvas bounds first
+    let x = Math.max(edgePadding, Math.min(desiredX, canvas.width - movingRect.width - edgePadding))
+    let y = Math.max(minY, Math.min(desiredY, canvas.height - movingRect.height - edgePadding))
     
-    const testRect = { ...movingRect, x: validX, y: validY }
-
-    for (const other of otherRects) {
-      // Create expanded collision boxes that include widget padding
-      const expandedOther = {
-        x: other.x - widgetPadding,
-        y: other.y - widgetPadding,
-        width: other.width + widgetPadding * 2,
-        height: other.height + widgetPadding * 2
+    // Multi-pass collision resolution (up to 10 attempts)
+    for (let attempt = 0; attempt < 10; attempt++) {
+      const testRect = { ...movingRect, x, y }
+      let hasCollision = false
+      let bestPosition = { x, y }
+      let minDistance = Infinity
+      
+      // Check all other widgets for collisions
+      for (const other of otherRects) {
+        if (checkCollision(testRect, other, widgetPadding)) {
+          hasCollision = true
+          
+          // Calculate all possible non-colliding positions around this widget
+          const positions = [
+            // Right side
+            { x: other.x + other.width + widgetPadding, y },
+            // Left side  
+            { x: other.x - testRect.width - widgetPadding, y },
+            // Bottom side
+            { x, y: other.y + other.height + widgetPadding },
+            // Top side
+            { x, y: other.y - testRect.height - widgetPadding },
+            // Diagonal positions for better coverage
+            { x: other.x + other.width + widgetPadding, y: other.y },
+            { x: other.x - testRect.width - widgetPadding, y: other.y },
+            { x: other.x, y: other.y + other.height + widgetPadding },
+            { x: other.x, y: other.y - testRect.height - widgetPadding }
+          ]
+          
+          // Find the closest valid position
+          for (const pos of positions) {
+            // Check bounds
+            if (pos.x < edgePadding || pos.x + testRect.width > canvas.width - edgePadding ||
+                pos.y < minY || pos.y + testRect.height > canvas.height - edgePadding) {
+              continue
+            }
+            
+            // Calculate distance from desired position
+            const distance = Math.sqrt(Math.pow(pos.x - desiredX, 2) + Math.pow(pos.y - desiredY, 2))
+            
+            if (distance < minDistance) {
+              // Verify this position doesn't collide with other widgets
+              const tempRect = { ...testRect, x: pos.x, y: pos.y }
+              let wouldCollide = false
+              
+              for (const otherCheck of otherRects) {
+                if (otherCheck.id !== other.id && checkCollision(tempRect, otherCheck, widgetPadding)) {
+                  wouldCollide = true
+                  break
+                }
+              }
+              
+              if (!wouldCollide) {
+                minDistance = distance
+                bestPosition = pos
+              }
+            }
+          }
+        }
       }
       
-      if (checkCollision(testRect, expandedOther)) {
-        const overlapX = Math.min(testRect.x + testRect.width - expandedOther.x, expandedOther.x + expandedOther.width - testRect.x)
-        const overlapY = Math.min(testRect.y + testRect.height - expandedOther.y, expandedOther.y + expandedOther.height - testRect.y)
-        
-        if (overlapX < overlapY) {
-          const moveLeft = testRect.x > other.x
-          validX = moveLeft ? 
-            other.x + other.width + widgetPadding : 
-            other.x - testRect.width - widgetPadding
-          validX = Math.max(padding, Math.min(validX, canvas.width - testRect.width - padding))
-        } else {
-          const moveUp = testRect.y > other.y
-          validY = moveUp ? 
-            other.y + other.height + widgetPadding : 
-            other.y - testRect.height - widgetPadding
-          validY = Math.max(minY, Math.min(validY, canvas.height - testRect.height - padding))
-        }
-        
-        testRect.x = validX
-        testRect.y = validY
+      if (!hasCollision) {
+        // No collision, position is valid
+        break
+      }
+      
+      // Use the best position found and try again
+      x = bestPosition.x
+      y = bestPosition.y
+      
+      // If we couldn't find a better position, we might be stuck
+      if (bestPosition.x === x && bestPosition.y === y && attempt > 0) {
+        break
       }
     }
-
-    return { x: validX, y: validY }
+    
+    // Final bounds check
+    x = Math.max(edgePadding, Math.min(x, canvas.width - movingRect.width - edgePadding))
+    y = Math.max(minY, Math.min(y, canvas.height - movingRect.height - edgePadding))
+    
+    return { x, y }
   }, [checkCollision, getCanvasBounds])
 
   const getClosestSize = useCallback((width, height) => {
@@ -90,6 +152,47 @@ export const useWidgetManagement = () => {
 
     return closestSize
   }, [])
+
+  const validateResizeOperation = useCallback((resizingRect, newWidth, newHeight, otherRects) => {
+    const canvas = getCanvasBounds()
+    const edgePadding = 10
+    const widgetPadding = 12
+    const minY = TITLE_AREA_HEIGHT + edgePadding
+    
+    // Check canvas bounds
+    const maxWidth = canvas.width - resizingRect.x - edgePadding
+    const maxHeight = canvas.height - resizingRect.y - edgePadding
+    
+    let validWidth = Math.min(newWidth, maxWidth)
+    let validHeight = Math.min(newHeight, maxHeight)
+    
+    // Check for collisions with other widgets
+    const testRect = { 
+      ...resizingRect, 
+      width: validWidth, 
+      height: validHeight 
+    }
+    
+    for (const other of otherRects) {
+      if (checkCollision(testRect, other, widgetPadding)) {
+        // Calculate maximum dimensions that don't collide
+        if (other.x > resizingRect.x) {
+          // Widget to the right - limit width
+          validWidth = Math.min(validWidth, other.x - resizingRect.x - widgetPadding)
+        }
+        if (other.y > resizingRect.y) {
+          // Widget below - limit height  
+          validHeight = Math.min(validHeight, other.y - resizingRect.y - widgetPadding)
+        }
+      }
+    }
+    
+    // Ensure minimum size
+    validWidth = Math.max(GRID_SIZE, validWidth)
+    validHeight = Math.max(GRID_SIZE, validHeight)
+    
+    return { width: validWidth, height: validHeight }
+  }, [checkCollision, getCanvasBounds])
 
   const generateRandomColor = useCallback(() => {
     const colors = [
@@ -343,6 +446,138 @@ export const useWidgetManagement = () => {
     }, 100)
   }, [rectangles, findNextGridPosition])
 
+  // API-powered widget creation functions
+  const addNewApiMetric = useCallback((metricSize = '1x1', metricType = 'totalWaivers') => {
+    const newId = Math.max(...rectangles.map(r => r.id), 0) + 1
+    const size = WIDGET_SIZES[metricSize]
+    const position = findNextGridPosition(size.cols, size.rows, rectangles)
+    
+    const newMetric = {
+      id: newId,
+      x: position.x,
+      y: position.y,
+      width: size.width,
+      height: size.height,
+      gridCols: size.cols,
+      gridRows: size.rows,
+      color: '#ffffff',
+      isDragging: false,
+      isResizing: false,
+      size: metricSize,
+      type: 'api-metric',
+      metricType: metricType,
+      isNew: true,
+      isApiPowered: true
+    }
+    
+    setRectangles(prev => [...prev, newMetric])
+    
+    setTimeout(() => {
+      setRectangles(prev => prev.map(r => 
+        r.id === newId ? { ...r, isNew: false } : r
+      ))
+    }, 500)
+    
+    setTimeout(() => {
+      if (canvasRef.current) {
+        const targetY = position.y - 100
+        canvasRef.current.scrollTo({
+          top: Math.max(0, targetY),
+          behavior: 'smooth'
+        })
+      }
+    }, 100)
+  }, [rectangles, findNextGridPosition])
+
+  const addNewApiChart = useCallback((timeRange = 'monthly') => {
+    const newId = Math.max(...rectangles.map(r => r.id), 0) + 1
+    const size = WIDGET_SIZES['3x3']
+    const position = findNextGridPosition(size.cols, size.rows, rectangles)
+    
+    const newChart = {
+      id: newId,
+      x: position.x,
+      y: position.y,
+      width: size.width,
+      height: size.height,
+      gridCols: size.cols,
+      gridRows: size.rows,
+      color: '#ffffff',
+      isDragging: false,
+      isResizing: false,
+      size: '3x3',
+      type: 'api-chart',
+      timeRange: timeRange,
+      isNew: true,
+      isApiPowered: true
+    }
+    
+    setRectangles(prev => [...prev, newChart])
+    
+    setTimeout(() => {
+      setRectangles(prev => prev.map(r => 
+        r.id === newId ? { ...r, isNew: false } : r
+      ))
+    }, 500)
+    
+    setTimeout(() => {
+      if (canvasRef.current) {
+        const targetY = position.y - 100
+        canvasRef.current.scrollTo({
+          top: Math.max(0, targetY),
+          behavior: 'smooth'
+        })
+      }
+    }, 100)
+  }, [rectangles, findNextGridPosition])
+
+  const addNewApiFunnel = useCallback(() => {
+    const newId = Math.max(...rectangles.map(r => r.id), 0) + 1
+    const size = WIDGET_SIZES['2x2']
+    const position = findNextGridPosition(size.cols, size.rows, rectangles)
+    
+    const newFunnel = {
+      id: newId,
+      x: position.x,
+      y: position.y,
+      width: size.width,
+      height: size.height,
+      gridCols: size.cols,
+      gridRows: size.rows,
+      color: '#ffffff',
+      isDragging: false,
+      isResizing: false,
+      size: '2x2',
+      type: 'api-funnel',
+      isNew: true,
+      isApiPowered: true
+    }
+    
+    setRectangles(prev => [...prev, newFunnel])
+    
+    setTimeout(() => {
+      setRectangles(prev => prev.map(r => 
+        r.id === newId ? { ...r, isNew: false, forceUpdate: Date.now() } : r
+      ))
+    }, 100)
+    
+    setTimeout(() => {
+      setRectangles(prev => prev.map(r => 
+        r.id === newId ? { ...r, isNew: false } : r
+      ))
+    }, 500)
+    
+    setTimeout(() => {
+      if (canvasRef.current) {
+        const targetY = position.y - 100
+        canvasRef.current.scrollTo({
+          top: Math.max(0, targetY),
+          behavior: 'smooth'
+        })
+      }
+    }, 200)
+  }, [rectangles, findNextGridPosition])
+
   return {
     rectangles,
     setRectangles,
@@ -353,10 +588,15 @@ export const useWidgetManagement = () => {
     canvasRef,
     getCanvasBounds,
     findValidPosition,
+    validateResizeOperation,
     getClosestSize,
     addNewRectangle,
     addNewChart,
     addNewFunnel,
-    addNewMetric
+    addNewMetric,
+    // API-powered widget functions
+    addNewApiMetric,
+    addNewApiChart,
+    addNewApiFunnel
   }
 }
