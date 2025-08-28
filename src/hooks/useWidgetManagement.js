@@ -1,11 +1,60 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { WIDGET_SIZES, GRID_SIZE, TITLE_AREA_HEIGHT, SAMPLE_CHART_DATA, SAMPLE_FUNNEL_DATA, SAMPLE_METRICS } from '../constants/widgetConstants'
+
+const STORAGE_KEY = 'dashboard-widgets'
 
 export const useWidgetManagement = () => {
   const [rectangles, setRectangles] = useState([])
   const [dragState, setDragState] = useState({ id: null, offsetX: 0, offsetY: 0 })
   const [resizeState, setResizeState] = useState({ id: null, handle: null, startX: 0, startY: 0, startWidth: 0, startHeight: 0 })
   const canvasRef = useRef(null)
+
+  // Save widgets to localStorage
+  const saveWidgetsToStorage = useCallback((widgets) => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(widgets))
+    } catch (error) {
+      console.warn('Failed to save widgets to localStorage:', error)
+    }
+  }, [])
+
+  // Load widgets from localStorage
+  const loadWidgetsFromStorage = useCallback(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY)
+      if (saved) {
+        const widgets = JSON.parse(saved)
+        return widgets
+      }
+    } catch (error) {
+      console.warn('Failed to load widgets from localStorage:', error)
+    }
+    return []
+  }, [])
+
+  // Load widgets on mount
+  useEffect(() => {
+    const savedWidgets = loadWidgetsFromStorage()
+    if (savedWidgets.length > 0) {
+      setRectangles(savedWidgets)
+    }
+  }, [loadWidgetsFromStorage])
+
+  // Save widgets whenever rectangles change
+  useEffect(() => {
+    if (rectangles.length > 0) {
+      saveWidgetsToStorage(rectangles)
+    } else {
+      // Clear storage when no widgets
+      localStorage.removeItem(STORAGE_KEY)
+    }
+  }, [rectangles, saveWidgetsToStorage])
+
+  // Clear all widgets and storage
+  const clearAllWidgets = useCallback(() => {
+    setRectangles([])
+    localStorage.removeItem(STORAGE_KEY)
+  }, [])
 
 
   const getCanvasBounds = useCallback(() => {
@@ -117,7 +166,7 @@ export const useWidgetManagement = () => {
 
   const addNewChart = useCallback(() => {
     const newId = Math.max(...rectangles.map(r => r.id), 0) + 1
-    const size = WIDGET_SIZES['3x3']
+    const size = WIDGET_SIZES['2x2']
     const position = findNextGridPosition(size.cols, size.rows, rectangles)
     
     const newChart = {
@@ -131,7 +180,7 @@ export const useWidgetManagement = () => {
       color: '#ffffff',
       isDragging: false,
       isResizing: false,
-      size: '3x3',
+      size: '2x2',
       type: 'chart',
       chartData: SAMPLE_CHART_DATA,
       isNew: true
@@ -297,7 +346,7 @@ export const useWidgetManagement = () => {
 
   const addNewApiChart = useCallback((timeRange = 'monthly') => {
     const newId = Math.max(...rectangles.map(r => r.id), 0) + 1
-    const size = WIDGET_SIZES['3x3']
+    const size = WIDGET_SIZES['2x2']
     const position = findNextGridPosition(size.cols, size.rows, rectangles)
     
     const newChart = {
@@ -311,7 +360,7 @@ export const useWidgetManagement = () => {
       color: '#ffffff',
       isDragging: false,
       isResizing: false,
-      size: '3x3',
+      size: '2x2',
       type: 'api-chart',
       timeRange: timeRange,
       isNew: true,
@@ -444,6 +493,8 @@ export const useWidgetManagement = () => {
     addNewApiMetric,
     addNewApiChart,
     addNewApiFunnel,
-    addNewApiTrends
+    addNewApiTrends,
+    // Storage functions
+    clearAllWidgets
   }
 }

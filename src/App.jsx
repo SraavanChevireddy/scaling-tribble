@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useWidgetManagement } from './hooks/useWidgetManagement'
 import { useMouseInteractions } from './hooks/useMouseInteractions'
+import { WIDGET_SIZES, SAMPLE_CHART_DATA, SAMPLE_FUNNEL_DATA } from './constants/widgetConstants'
 import Sidebar from './components/Sidebar'
 import Widget from './components/Widget'
 import DataRangeFilter from './components/DataRangeFilter'
@@ -8,11 +9,13 @@ import WaiverFilter from './components/WaiverFilter'
 import ApplicationFilter from './components/ApplicationFilter'
 import ExpirationFilter from './components/ExpirationFilter'
 import GetStartedDialog from './components/GetStartedDialog'
+import EmptyState from './components/EmptyState'
+import EditableDashboardName from './components/EditableDashboardName'
 import './App.css'
 import './styles/api-widgets.css'
 
 function App() {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true)
   const [showGetStarted, setShowGetStarted] = useState(false)
   const [selectedDataRange, setSelectedDataRange] = useState(null)
   const [selectedWaiver, setSelectedWaiver] = useState(null)
@@ -58,6 +61,42 @@ function App() {
     setRectangles(prev => prev.filter(rect => rect.id !== id));
   };
 
+  // Handle opening sidebar from empty state
+  const handleOpenSidebar = () => {
+    setSidebarCollapsed(false);
+  };
+
+  // Handle starting from template - adds 7 days trend widget
+  const handleStartFromTemplate = () => {
+    const size = WIDGET_SIZES['1x1']
+    
+    const widget = {
+      id: 1,
+      x: 50,
+      y: 120, // Start below the title area
+      width: size.width,
+      height: size.height,
+      gridCols: size.cols,
+      gridRows: size.rows,
+      color: '#ffffff',
+      isDragging: false,
+      isResizing: false,
+      size: '1x1',
+      type: 'api-trends',
+      trendType: 'expiring7Days',
+      isApiPowered: true,
+      isNew: true
+    }
+
+    // Add the widget
+    setRectangles([widget])
+
+    // Remove the "new" flag after animation completes
+    setTimeout(() => {
+      setRectangles(prev => prev.map(w => ({ ...w, isNew: false })))
+    }, 500)
+  };
+
   // Widget actions for sidebar
   const widgetActions = {
     addNewRectangle,
@@ -79,6 +118,9 @@ function App() {
       />
       
       <div className="right-title-area">
+        <div className="dashboard-name-section">
+          <EditableDashboardName />
+        </div>
         <div className="right-title-section">
           <h3 className="right-title">Waiver Explorer</h3>
         </div>
@@ -115,6 +157,10 @@ function App() {
               onDeleteWidget={handleDeleteWidget}
             />
           ))}
+          
+          {rectangles.length === 0 && (
+            <EmptyState onOpenSidebar={handleOpenSidebar} onStartFromTemplate={handleStartFromTemplate} />
+          )}
         </div>
       </div>
       

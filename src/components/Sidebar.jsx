@@ -45,8 +45,8 @@ const Sidebar = ({ sidebarCollapsed, setSidebarCollapsed, widgetActions }) => {
     {
       id: 'chart',
       title: 'Bar Chart',
-      subtitle: '3×3 Size',
-      keywords: ['chart', 'bar', 'graph', 'data', 'visualization', '3x3'],
+      subtitle: '2×2 Size',
+      keywords: ['chart', 'bar', 'graph', 'data', 'visualization', '2x2'],
       action: addNewChart,
       icon: (
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
