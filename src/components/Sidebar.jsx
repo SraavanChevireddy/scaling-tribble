@@ -106,7 +106,7 @@ const Sidebar = ({ sidebarCollapsed, setSidebarCollapsed, widgetActions }) => {
     },
     {
       id: 'api-funnel',
-      title: 'Live Waivers ⚡',
+      title: 'Live Waivers',
       subtitle: 'Real-time Flow',
       keywords: ['api', 'live', 'real-time', 'funnel', 'waiver', 'expiring', 'flow'],
       action: addNewApiFunnel,
@@ -120,7 +120,7 @@ const Sidebar = ({ sidebarCollapsed, setSidebarCollapsed, widgetActions }) => {
     },
     {
       id: 'api-trends-7',
-      title: '7-Day Trends 📈',
+      title: '7-Day Trends',
       subtitle: 'Expiring Soon',
       keywords: ['api', 'live', 'trends', 'percentage', 'change', 'waiver', 'expiring', '7-day', '7', 'soon'],
       action: () => addNewApiTrends('1x1', 'expiring7Days'),
@@ -136,7 +136,7 @@ const Sidebar = ({ sidebarCollapsed, setSidebarCollapsed, widgetActions }) => {
     },
     {
       id: 'api-trends-30',
-      title: '30-Day Trends 📊',
+      title: '30-Day Trends',
       subtitle: 'Monthly View',
       keywords: ['api', 'live', 'trends', 'percentage', 'change', 'waiver', 'expiring', '30-day', '30', 'monthly', 'month'],
       action: () => addNewApiTrends('1x1', 'expiring30Days'),
@@ -152,7 +152,7 @@ const Sidebar = ({ sidebarCollapsed, setSidebarCollapsed, widgetActions }) => {
     },
     {
       id: 'api-trends-90',
-      title: '90-Day Trends 📉',
+      title: '90-Day Trends',
       subtitle: 'Quarterly View',
       keywords: ['api', 'live', 'trends', 'percentage', 'change', 'waiver', 'expiring', '90-day', '90', 'quarterly', 'quarter'],
       action: () => addNewApiTrends('1x1', 'expiring90Days'),
@@ -168,7 +168,7 @@ const Sidebar = ({ sidebarCollapsed, setSidebarCollapsed, widgetActions }) => {
     },
     {
       id: 'api-trends-never',
-      title: 'Never Expires 🔄',
+      title: 'Never Expires',
       subtitle: 'Permanent Status',
       keywords: ['api', 'live', 'trends', 'percentage', 'change', 'waiver', 'never', 'expires', 'permanent', 'perpetual'],
       action: () => addNewApiTrends('1x1', 'neverExpires'),
