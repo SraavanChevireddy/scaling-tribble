@@ -3,6 +3,10 @@ import BasicWidget from './BasicWidget';
 import ChartWidget from './ChartWidget';
 import FunnelWidget from './FunnelWidget';
 import MetricWidget from './MetricWidget';
+import ApiChartWidget from './ApiChartWidget';
+import ApiFunnelWidget from './ApiFunnelWidget';
+import ApiMetricWidget from './ApiMetricWidget';
+import ApiTrendsWidget from './ApiTrendsWidget';
 
 const WidgetModal = ({ widget, onClose }) => {
   const modalRef = useRef(null);
@@ -44,10 +48,18 @@ const WidgetModal = ({ widget, onClose }) => {
     switch (widget.type) {
       case 'chart':
         return <ChartWidget rect={expandedRect} />;
+      case 'api-chart':
+        return <ApiChartWidget rect={expandedRect} timeRange={widget.timeRange} />;
       case 'funnel':
         return <FunnelWidget rect={expandedRect} handleResizeStart={null} />;
+      case 'api-funnel':
+        return <ApiFunnelWidget rect={expandedRect} handleResizeStart={null} />;
       case 'metric':
         return <MetricWidget rect={expandedRect} handleResizeStart={null} />;
+      case 'api-metric':
+        return <ApiMetricWidget rect={expandedRect} handleResizeStart={null} metricType={widget.metricType} />;
+      case 'api-trends':
+        return <ApiTrendsWidget rect={expandedRect} handleResizeStart={null} trendType={widget.trendType} />;
       default:
         return <BasicWidget rect={expandedRect} handleResizeStart={null} />;
     }
@@ -58,10 +70,18 @@ const WidgetModal = ({ widget, onClose }) => {
     switch (widget.type) {
       case 'chart':
         return 'Chart Widget';
+      case 'api-chart':
+        return 'Live Chart Widget';
       case 'funnel':
         return 'Funnel Widget';
+      case 'api-funnel':
+        return 'Live Funnel Widget';
       case 'metric':
         return widget.metricData?.name || 'Metric Widget';
+      case 'api-metric':
+        return 'Live Metric Widget';
+      case 'api-trends':
+        return 'Live Trends Widget';
       default:
         return `Widget (${widget.size})`;
     }
@@ -75,11 +95,16 @@ const WidgetModal = ({ widget, onClose }) => {
           <button className="widget-modal-close" onClick={onClose}>×</button>
         </div>
         <div 
-          className={`widget-modal-content ${widget.type === 'funnel' ? 'modal-funnel' : ''}`} 
+          className={`widget-modal-content ${
+            widget.type === 'funnel' || widget.type === 'api-funnel' ? 'modal-funnel' : ''
+          } ${
+            widget.type === 'chart' || widget.type === 'api-chart' ? 'modal-chart' : ''
+          }`} 
           style={{ 
             width: widget.width * 2.5, 
             height: widget.height * 2.5,
-            minHeight: widget.type === 'funnel' ? 500 : 300
+            minHeight: (widget.type === 'funnel' || widget.type === 'api-funnel') ? 500 : 
+                       (widget.type === 'chart' || widget.type === 'api-chart') ? 400 : 300
           }}
         >
           {renderWidgetContent()}

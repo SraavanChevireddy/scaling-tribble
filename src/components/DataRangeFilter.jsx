@@ -5,7 +5,7 @@ const DataRangeFilter = ({ onRangeChange }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   
-  const rangeOptions = [7, 15, 25, 30, 70];
+  const rangeOptions = [7, 30, 60, 90];
   
   // Handle clicks outside of the dropdown
   useEffect(() => {
