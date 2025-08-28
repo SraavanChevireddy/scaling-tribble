@@ -130,6 +130,50 @@ export const useFunnelChartData = (threatLevel = 'critical', autoRefresh = false
 }
 
 /**
+ * Hook for fetching waiver trends data
+ */
+export const useWaiverTrends = (autoRefresh = false) => {
+  const [data, setData] = useState({})
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  const fetchTrends = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    
+    try {
+      const trends = await WaiverApiService.fetchWaiverTrends()
+      setData(trends)
+    } catch (error) {
+      console.error('Failed to fetch waiver trends:', error)
+      setError(error.message)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  // Initial fetch
+  useEffect(() => {
+    fetchTrends()
+  }, [fetchTrends])
+
+  // Auto refresh every 5 minutes if enabled
+  useEffect(() => {
+    if (autoRefresh) {
+      const interval = setInterval(fetchTrends, 300000)
+      return () => clearInterval(interval)
+    }
+  }, [autoRefresh, fetchTrends])
+
+  return {
+    data,
+    loading,
+    error,
+    refresh: fetchTrends
+  }
+}
+
+/**
  * Hook for fetching bar chart data
  */
 export const useBarChartData = (timeRange = 'monthly') => {

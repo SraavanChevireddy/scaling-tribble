@@ -46,7 +46,8 @@ function App() {
     addNewMetric,
     addNewApiMetric,
     addNewApiChart,
-    addNewApiFunnel
+    addNewApiFunnel,
+    addNewApiTrends
   } = widgetManagement
   const { handleMouseDown, handleResizeStart, handleMouseMove, handleMouseUp } = mouseInteractions
 
@@ -63,7 +64,8 @@ function App() {
     addNewMetric,
     addNewApiMetric,
     addNewApiChart,
-    addNewApiFunnel
+    addNewApiFunnel,
+    addNewApiTrends
   }
 
   return (

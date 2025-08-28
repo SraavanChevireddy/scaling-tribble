@@ -9,7 +9,8 @@ const Sidebar = ({ sidebarCollapsed, setSidebarCollapsed, widgetActions }) => {
     addNewMetric,
     addNewApiMetric,
     addNewApiChart,
-    addNewApiFunnel
+    addNewApiFunnel,
+    addNewApiTrends
   } = widgetActions
 
   const widgetOptions = [
@@ -20,7 +21,7 @@ const Sidebar = ({ sidebarCollapsed, setSidebarCollapsed, widgetActions }) => {
       keywords: ['basic', 'widget', 'simple', '1x1'],
       action: addNewRectangle,
       icon: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
           <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2"/>
           <path d="M12 8v8M8 12h8" stroke="currentColor" strokeWidth="2"/>
         </svg>
@@ -34,7 +35,7 @@ const Sidebar = ({ sidebarCollapsed, setSidebarCollapsed, widgetActions }) => {
       keywords: ['metric', 'kpi', 'display', 'number', 'analytics'],
       action: () => addNewMetric('1x1'),
       icon: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
           <path d="M3 12l2-2 4 4 6-6 6 2v6H3v-4z" fill="currentColor" opacity="0.2"/>
           <path d="M3 12l2-2 4 4 6-6 6 2" stroke="currentColor" strokeWidth="2" fill="none"/>
         </svg>
@@ -48,7 +49,7 @@ const Sidebar = ({ sidebarCollapsed, setSidebarCollapsed, widgetActions }) => {
       keywords: ['chart', 'bar', 'graph', 'data', 'visualization', '3x3'],
       action: addNewChart,
       icon: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
           <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2"/>
           <rect x="7" y="13" width="2" height="5" fill="currentColor"/>
           <rect x="11" y="9" width="2" height="9" fill="currentColor"/>
@@ -64,7 +65,7 @@ const Sidebar = ({ sidebarCollapsed, setSidebarCollapsed, widgetActions }) => {
       keywords: ['funnel', 'waiver', 'expiring', '2x2', 'flow', 'conversion'],
       action: addNewFunnel,
       icon: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
           <path d="M6 3h12l-2 4H8l-2-4zM8 7h8l-1.5 3H9.5L8 7zM9.5 10h5l-1 2h-3l-1-2zM10.5 12h3l-0.5 1h-2l-0.5-1z" fill="currentColor"/>
         </svg>
       ),
@@ -78,7 +79,7 @@ const Sidebar = ({ sidebarCollapsed, setSidebarCollapsed, widgetActions }) => {
       keywords: ['api', 'live', 'real-time', 'metric', 'kpi', 'data', 'waiver'],
       action: () => addNewApiMetric('1x1', 'totalWaivers'),
       icon: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
           <path d="M3 12l2-2 4 4 6-6 6 2v6H3v-4z" fill="currentColor" opacity="0.2"/>
           <path d="M3 12l2-2 4 4 6-6 6 2" stroke="currentColor" strokeWidth="2" fill="none"/>
           <circle cx="21" cy="5" r="3" fill="#10b981" stroke="white" strokeWidth="2"/>
@@ -93,7 +94,7 @@ const Sidebar = ({ sidebarCollapsed, setSidebarCollapsed, widgetActions }) => {
       keywords: ['api', 'live', 'real-time', 'chart', 'bar', 'data', 'trends'],
       action: () => addNewApiChart('monthly'),
       icon: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
           <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2"/>
           <rect x="7" y="13" width="2" height="5" fill="currentColor"/>
           <rect x="11" y="9" width="2" height="9" fill="currentColor"/>
@@ -110,12 +111,75 @@ const Sidebar = ({ sidebarCollapsed, setSidebarCollapsed, widgetActions }) => {
       keywords: ['api', 'live', 'real-time', 'funnel', 'waiver', 'expiring', 'flow'],
       action: addNewApiFunnel,
       icon: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
           <path d="M6 3h12l-2 4H8l-2-4zM8 7h8l-1.5 3H9.5L8 7zM9.5 10h5l-1 2h-3l-1-2zM10.5 12h3l-0.5 1h-2l-0.5-1z" fill="currentColor"/>
           <circle cx="20" cy="6" r="2" fill="#10b981" stroke="white" strokeWidth="1"/>
         </svg>
       ),
       iconClass: 'funnel-icon api-icon'
+    },
+    {
+      id: 'api-trends-7',
+      title: '7-Day Trends 📈',
+      subtitle: 'Expiring Soon',
+      keywords: ['api', 'live', 'trends', 'percentage', 'change', 'waiver', 'expiring', '7-day', '7', 'soon'],
+      action: () => addNewApiTrends('1x1', 'expiring7Days'),
+      icon: (
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+          <path d="M3 17l6-6 4 4 8-8" stroke="currentColor" strokeWidth="2" fill="none"/>
+          <path d="M17 7h4v4" stroke="currentColor" strokeWidth="2" fill="none"/>
+          <path d="M3 12l2-2 4 4 6-6 6 2v6H3v-4z" fill="currentColor" opacity="0.1"/>
+          <circle cx="20" cy="4" r="2" fill="#dc2626" stroke="white" strokeWidth="1"/>
+        </svg>
+      ),
+      iconClass: 'trends-icon api-icon'
+    },
+    {
+      id: 'api-trends-30',
+      title: '30-Day Trends 📊',
+      subtitle: 'Monthly View',
+      keywords: ['api', 'live', 'trends', 'percentage', 'change', 'waiver', 'expiring', '30-day', '30', 'monthly', 'month'],
+      action: () => addNewApiTrends('1x1', 'expiring30Days'),
+      icon: (
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+          <path d="M3 17l6-6 4 4 8-8" stroke="currentColor" strokeWidth="2" fill="none"/>
+          <path d="M17 7h4v4" stroke="currentColor" strokeWidth="2" fill="none"/>
+          <path d="M3 12l2-2 4 4 6-6 6 2v6H3v-4z" fill="currentColor" opacity="0.1"/>
+          <circle cx="20" cy="4" r="2" fill="#f59e0b" stroke="white" strokeWidth="1"/>
+        </svg>
+      ),
+      iconClass: 'trends-icon api-icon'
+    },
+    {
+      id: 'api-trends-90',
+      title: '90-Day Trends 📉',
+      subtitle: 'Quarterly View',
+      keywords: ['api', 'live', 'trends', 'percentage', 'change', 'waiver', 'expiring', '90-day', '90', 'quarterly', 'quarter'],
+      action: () => addNewApiTrends('1x1', 'expiring90Days'),
+      icon: (
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+          <path d="M3 7l6 6 4-4 8 8" stroke="currentColor" strokeWidth="2" fill="none"/>
+          <path d="M17 17h4v-4" stroke="currentColor" strokeWidth="2" fill="none"/>
+          <path d="M3 12l2-2 4 4 6-6 6 2v6H3v-4z" fill="currentColor" opacity="0.1"/>
+          <circle cx="20" cy="20" r="2" fill="#10b981" stroke="white" strokeWidth="1"/>
+        </svg>
+      ),
+      iconClass: 'trends-icon api-icon'
+    },
+    {
+      id: 'api-trends-never',
+      title: 'Never Expires 🔄',
+      subtitle: 'Permanent Status',
+      keywords: ['api', 'live', 'trends', 'percentage', 'change', 'waiver', 'never', 'expires', 'permanent', 'perpetual'],
+      action: () => addNewApiTrends('1x1', 'neverExpires'),
+      icon: (
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2v20M2 12h20" stroke="currentColor" strokeWidth="2" fill="none"/>
+          <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" fill="none"/>
+          <circle cx="20" cy="4" r="2" fill="#8b5cf6" stroke="white" strokeWidth="1"/>
+        </svg>
+      ),
+      iconClass: 'trends-icon api-icon'
     }
   ]
 
@@ -178,7 +242,7 @@ const Sidebar = ({ sidebarCollapsed, setSidebarCollapsed, widgetActions }) => {
             {filteredWidgets.length === 0 && searchTerm && (
               <div className="no-results">
                 <p>No widgets found for "{searchTerm}"</p>
-                <span>Try searching for: basic, metric, chart, funnel, or waiver</span>
+                <span>Try searching for: basic, metric, chart, funnel, 7-day, 30-day, 90-day, never, trends, or waiver</span>
               </div>
             )}
           </div>

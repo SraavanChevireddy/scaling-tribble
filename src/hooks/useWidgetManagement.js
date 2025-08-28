@@ -578,6 +578,48 @@ export const useWidgetManagement = () => {
     }, 200)
   }, [rectangles, findNextGridPosition])
 
+  const addNewApiTrends = useCallback((trendSize = '1x1', trendType = 'expiring7Days') => {
+    const newId = Math.max(...rectangles.map(r => r.id), 0) + 1
+    const size = WIDGET_SIZES[trendSize]
+    const position = findNextGridPosition(size.cols, size.rows, rectangles)
+    
+    const newTrends = {
+      id: newId,
+      x: position.x,
+      y: position.y,
+      width: size.width,
+      height: size.height,
+      gridCols: size.cols,
+      gridRows: size.rows,
+      color: '#ffffff',
+      isDragging: false,
+      isResizing: false,
+      size: trendSize,
+      type: 'api-trends',
+      trendType: trendType,
+      isNew: true,
+      isApiPowered: true
+    }
+    
+    setRectangles(prev => [...prev, newTrends])
+    
+    setTimeout(() => {
+      setRectangles(prev => prev.map(r => 
+        r.id === newId ? { ...r, isNew: false } : r
+      ))
+    }, 500)
+    
+    setTimeout(() => {
+      if (canvasRef.current) {
+        const targetY = position.y - 100
+        canvasRef.current.scrollTo({
+          top: Math.max(0, targetY),
+          behavior: 'smooth'
+        })
+      }
+    }, 100)
+  }, [rectangles, findNextGridPosition])
+
   return {
     rectangles,
     setRectangles,
@@ -597,6 +639,7 @@ export const useWidgetManagement = () => {
     // API-powered widget functions
     addNewApiMetric,
     addNewApiChart,
-    addNewApiFunnel
+    addNewApiFunnel,
+    addNewApiTrends
   }
 }
