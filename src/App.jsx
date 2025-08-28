@@ -9,6 +9,7 @@ import WaiverFilter from './components/WaiverFilter'
 import ExpirationFilter from './components/ExpirationFilter'
 import GetStartedDialog from './components/GetStartedDialog'
 import EmptyState from './components/EmptyState'
+import EditableDashboardName from './components/EditableDashboardName'
 import './App.css'
 import './styles/api-widgets.css'
 
@@ -115,6 +116,9 @@ function App() {
       />
       
       <div className="right-title-area">
+        <div className="dashboard-name-section">
+          <EditableDashboardName />
+        </div>
         <div className="right-title-section">
           <h3 className="right-title">Waiver Explorer</h3>
         </div>

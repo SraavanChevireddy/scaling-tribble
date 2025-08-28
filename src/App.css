@@ -728,8 +728,9 @@
               opacity 0.3s ease;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   height: 40px;
+  gap: 16px;
 }
 
 /* Get Started Dialog Styles */
@@ -1044,15 +1045,21 @@
   pointer-events: none;
 }
 
+.dashboard-name-section {
+  display: flex;
+  align-items: center;
+}
+
 .right-title-section {
   text-align: left;
+  margin: 0 16px;
 }
 
 .right-title {
   margin: 0;
-  font-size: 18px;
-  font-weight: 700;
-  color: #000;
+  font-size: 16px;
+  font-weight: 600;
+  color: #6b7280;
   line-height: 1.2;
 }
 
@@ -1614,6 +1621,7 @@
   padding: 0;
   box-shadow: none;
   transition: all 0.3s ease;
+  margin-left: auto;
 }
 
 .filters-wrapper {
@@ -1868,5 +1876,117 @@
 .empty-state-btn:active {
   transform: translateY(0);
   transition-duration: 0.1s;
+}
+
+/* Dashboard Name Styles */
+.dashboard-name-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+}
+
+/* Empty State - Just pencil icon */
+.dashboard-name-container.empty {
+  padding: 8px;
+  background: transparent;
+  border-radius: 50%;
+}
+
+.dashboard-name-container.empty:hover {
+  background: rgba(0, 101, 250, 0.1);
+  transform: scale(1.1);
+}
+
+.edit-icon-empty {
+  color: #0065FA;
+  transition: all 0.2s ease;
+}
+
+.dashboard-name-container.empty:hover .edit-icon-empty {
+  color: #0056D6;
+}
+
+/* Editing State - Expanded input */
+.dashboard-name-container.editing {
+  padding: 10px 16px;
+  border-radius: 25px;
+  cursor: default;
+  background: #0065FA;
+  box-shadow: 0 0 0 3px rgba(0, 101, 250, 0.2);
+  animation: expandToEdit 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 200px;
+}
+
+@keyframes expandToEdit {
+  from {
+    padding: 8px;
+    border-radius: 50%;
+    min-width: 36px;
+    background: transparent;
+  }
+  to {
+    padding: 10px 16px;
+    border-radius: 25px;
+    min-width: 200px;
+    background: #0065FA;
+  }
+}
+
+/* Filled State - Semi-transparent capsule */
+.dashboard-name-container.filled {
+  padding: 8px 14px;
+  border-radius: 20px;
+  background: rgba(0, 101, 250, 0.3);
+  backdrop-filter: blur(8px);
+  max-width: 300px;
+}
+
+.dashboard-name-container.filled:hover {
+  background: rgba(0, 101, 250, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 101, 250, 0.2);
+}
+
+.dashboard-name-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0065FA;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 60px;
+}
+
+.dashboard-name-input {
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  background: transparent;
+  border: none;
+  outline: none;
+  line-height: 1.2;
+  min-width: 100px;
+  width: 100%;
+}
+
+.dashboard-name-input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 400;
+}
+
+.edit-icon {
+  color: #0065FA;
+  opacity: 0.6;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.dashboard-name-container.filled:hover .edit-icon {
+  opacity: 1;
+  transform: scale(1.1);
 }
 
