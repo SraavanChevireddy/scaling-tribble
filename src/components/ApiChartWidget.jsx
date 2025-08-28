@@ -5,12 +5,25 @@
 
 import { ResponsiveBar } from '@nivo/bar'
 import { useBarChartData } from '../hooks/useWaiverApi'
+import { useState, useEffect } from 'react'
 
 const ApiChartWidget = ({ rect, timeRange = 'monthly' }) => {
   const { data: chartData, loading, error, refresh } = useBarChartData(timeRange)
+  const [showChart, setShowChart] = useState(false)
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowChart(true)
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [])
 
   return (
-    <div className="chart-container">
+    <div className="chart-container" style={{ 
+      borderRadius: '12px',
+      overflow: 'hidden'
+    }}>
       <div className="widget-info chart-info">
         <span className="size-label">Live Chart</span>
         <div className="chart-controls">
@@ -19,10 +32,10 @@ const ApiChartWidget = ({ rect, timeRange = 'monthly' }) => {
         </div>
       </div>
       
-      {loading && !chartData.length ? (
-        <div className="chart-loading">
+      {!showChart || (loading && !chartData.length) ? (
+        <div className="chart-loading-delay">
           <div className="loading-spinner-large">⟳</div>
-          <p>Loading chart data...</p>
+          <p>{!showChart ? "Loading chart..." : "Loading chart data..."}</p>
         </div>
       ) : (
         <ResponsiveBar
