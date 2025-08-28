@@ -1,15 +1,35 @@
 import { ResponsiveBar } from '@nivo/bar'
+import { useState, useEffect } from 'react'
 
 const ChartWidget = ({ rect }) => {
+  const [showChart, setShowChart] = useState(false)
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowChart(true)
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [])
+
   return (
-    <div className="chart-container">
+    <div className="chart-container" style={{ 
+      borderRadius: '12px',
+      overflow: 'hidden'
+    }}>
       {/* Only show info label when not in expanded view */}
       {!rect.expandedView && (
         <div className="widget-info chart-info">
           <span className="size-label">Bar Chart</span>
         </div>
       )}
-      <ResponsiveBar
+      {!showChart ? (
+        <div className="chart-loading-delay">
+          <div className="loading-spinner-large">⟳</div>
+          <p>Loading chart...</p>
+        </div>
+      ) : (
+        <ResponsiveBar
         data={rect.chartData}
         keys={['sales', 'expenses']}
         indexBy="month"
@@ -73,7 +93,8 @@ const ChartWidget = ({ rect }) => {
         role="application"
         ariaLabel="Bar chart"
         barAriaLabel={e => `${e.id}: ${e.formattedValue} in month: ${e.indexValue}`}
-      />
+        />
+      )}
     </div>
   )
 }
