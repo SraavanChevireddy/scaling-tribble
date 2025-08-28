@@ -1241,11 +1241,16 @@
 }
 
 .metric-container.metric-compact .metric-value {
-  font-size: 48px;
+  font-size: 36px;
   font-weight: 700;
-  line-height: 1;
+  line-height: 0.9;
   margin-top: auto;
   text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* 2x1 - Two Columns (Horizontal - title/subtitle on left, value on right) */
@@ -1269,11 +1274,17 @@
 }
 
 .metric-container.metric-expanded .metric-value {
-  font-size: 32px;
+  font-size: 26px;
   font-weight: 700;
-  line-height: 1;
+  line-height: 0.9;
   flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  box-sizing: border-box;
 }
+
 
 .metric-title {
   font-size: 16px;
