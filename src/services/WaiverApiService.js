@@ -76,6 +76,19 @@ class WaiverApiService {
   }
 
   /**
+   * Get fallback trends data when API is unavailable
+   */
+  getFallbackTrendsData() {
+    return {
+      expiring7Days: { changePercentage: 22.7, previousMonth: 22 },
+      expiring30Days: { changePercentage: 10.4, previousMonth: 48 },
+      expiring90Days: { changePercentage: 8.5, previousMonth: 82 },
+      expiringLater: { changePercentage: 6.3, previousMonth: 95 },
+      neverExpires: { changePercentage: 10.5, previousMonth: 38 }
+    }
+  }
+
+  /**
    * Simple cache methods
    */
   getFromCache(key) {

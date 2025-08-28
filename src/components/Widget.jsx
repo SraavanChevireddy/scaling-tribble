@@ -6,6 +6,7 @@ import MetricWidget from './MetricWidget'
 import ApiChartWidget from './ApiChartWidget'
 import ApiFunnelWidget from './ApiFunnelWidget'
 import ApiMetricWidget from './ApiMetricWidget'
+import ApiTrendsWidget from './ApiTrendsWidget'
 import WidgetMenu from './WidgetMenu'
 import WidgetModal from './WidgetModal'
 
@@ -26,6 +27,8 @@ const Widget = ({ rect, handleMouseDown, handleResizeStart, onDeleteWidget }) =>
         return <MetricWidget rect={rect} handleResizeStart={handleResizeStart} />
       case 'api-metric':
         return <ApiMetricWidget rect={rect} handleResizeStart={handleResizeStart} metricType={rect.metricType} />
+      case 'api-trends':
+        return <ApiTrendsWidget rect={rect} handleResizeStart={handleResizeStart} trendType={rect.trendType} />
       default:
         return <BasicWidget rect={rect} handleResizeStart={handleResizeStart} />
     }
