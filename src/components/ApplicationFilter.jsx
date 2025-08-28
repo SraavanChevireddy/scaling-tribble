@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
+import useApplications from '../hooks/useApplications';
 
-const WaiverFilter = ({ onWaiverChange }) => {
-  const [selectedWaiver, setSelectedWaiver] = useState(null); // Default to null to show 'Select'
+const ApplicationFilter = ({ onApplicationChange }) => {
+  const [selectedApplication, setSelectedApplication] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   
-  const waiverOptions = ['Root', 'Organisational', 'Manual', 'Auto'];
+  const { applications, loading, error } = useApplications();
   
   // Handle clicks outside of the dropdown
   useEffect(() => {
@@ -25,10 +26,10 @@ const WaiverFilter = ({ onWaiverChange }) => {
   }, [isDropdownOpen]);
   
   const handleChange = (value) => {
-    setSelectedWaiver(value);
+    setSelectedApplication(value);
     setIsDropdownOpen(false);
-    if (onWaiverChange) {
-      onWaiverChange(value);
+    if (onApplicationChange) {
+      onApplicationChange(value);
     }
   };
   
@@ -40,22 +41,26 @@ const WaiverFilter = ({ onWaiverChange }) => {
     <div className="data-range-filter">
       <div className="data-range-container">
         <div className="data-range-layout">
-          <div className="data-range-label">Waiver: </div>
+          <div className="data-range-label">App: </div>
           <div className="data-range-dropdown-container" ref={dropdownRef}>
             <button onClick={toggleDropdown} className="data-range-dropdown-button">
-              {selectedWaiver || 'Select'}
+              {selectedApplication || 'Select'}
             </button>
             {isDropdownOpen && (
               <div className="data-range-dropdown">
-                {waiverOptions.map((option) => (
-                  <div 
-                    key={option} 
-                    className={`data-range-option ${selectedWaiver === option ? 'selected' : ''}`}
-                    onClick={() => handleChange(option)}
-                  >
-                    {option}
-                  </div>
-                ))}
+                {loading ? (
+                  <div className="data-range-option">Loading...</div>
+                ) : (
+                  applications.map((app) => (
+                    <div 
+                      key={app} 
+                      className={`data-range-option ${selectedApplication === app ? 'selected' : ''}`}
+                      onClick={() => handleChange(app)}
+                    >
+                      {app}
+                    </div>
+                  ))
+                )}
               </div>
             )}
           </div>
@@ -65,4 +70,4 @@ const WaiverFilter = ({ onWaiverChange }) => {
   );
 };
 
-export default WaiverFilter;
+export default ApplicationFilter;
