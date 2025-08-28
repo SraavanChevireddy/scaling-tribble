@@ -40,82 +40,108 @@ const ApiChartWidget = ({ rect, timeRange = 'monthly' }) => {
       ) : (
         <ResponsiveBar
           data={chartData}
-          keys={['waivers', 'expired']}
+          keys={['waivers']}
           indexBy="month"
-          margin={{ top: 40, right: 40, bottom: 40, left: 40 }}
-          padding={0.3}
+          margin={{ top: 50, right: 60, bottom: 60, left: 80 }}
+          padding={0.4}
           valueScale={{ type: 'linear' }}
           indexScale={{ type: 'band', round: true }}
-          colors={['#3b82f6', '#ef4444']}
-          borderColor={{
-            from: 'color',
-            modifiers: [['darker', 1.6]]
-          }}
+          colors={['#3b82f6']}
+          borderRadius={6}
+          enableGridX={false}
+          enableGridY={true}
+          gridYValues={5}
           axisTop={null}
           axisRight={null}
           axisBottom={{
-            tickSize: 3,
-            tickPadding: 3,
+            tickSize: 5,
+            tickPadding: 8,
             tickRotation: 0,
             legend: 'Period',
             legendPosition: 'middle',
-            legendOffset: 30
+            legendOffset: 40,
+            format: value => value
           }}
           axisLeft={{
             tickSize: 5,
-            tickPadding: 5,
+            tickPadding: 8,
             tickRotation: 0,
-            legend: 'Waiver Count',
+            legend: 'Waivers',
             legendPosition: 'middle',
-            legendOffset: -40
+            legendOffset: -60,
+            format: value => `${value.toLocaleString()}`
           }}
-          labelSkipWidth={10}
-          labelSkipHeight={10}
-          enableLabel={false}
-          labelTextColor={{
-            from: 'color',
-            modifiers: [['darker', 1.6]]
-          }}
-          legends={[
-            {
-              dataFrom: 'keys',
-              anchor: 'top',
-              direction: 'row',
-              justify: false,
-              translateX: 0,
-              translateY: -15,
-              itemsSpacing: 2,
-              itemWidth: 60,
-              itemHeight: 15,
-              itemDirection: 'left-to-right',
-              itemOpacity: 0.85,
-              symbolSize: 10,
-              effects: [
-                {
-                  on: 'hover',
-                  style: {
-                    itemOpacity: 1
-                  }
-                }
-              ]
-            }
-          ]}
+          enableLabel={true}
+          labelSkipWidth={12}
+          labelSkipHeight={12}
+          labelTextColor="#f8f8f8"
           animate={true}
           motionConfig="gentle"
+          theme={{
+            background: 'transparent',
+            text: {
+              fontSize: 12,
+              fill: '#374151',
+              fontFamily: 'Arial Rounded MT, Arial, sans-serif'
+            },
+            axis: {
+              domain: {
+                line: {
+                  stroke: '#e5e7eb',
+                  strokeWidth: 1
+                }
+              },
+              legend: {
+                text: {
+                  fontSize: 13,
+                  fill: '#6b7280',
+                  fontWeight: 600
+                }
+              },
+              ticks: {
+                line: {
+                  stroke: '#e5e7eb',
+                  strokeWidth: 1
+                },
+                text: {
+                  fontSize: 11,
+                  fill: '#9ca3af'
+                }
+              }
+            },
+            grid: {
+              line: {
+                stroke: '#f3f4f6',
+                strokeWidth: 1
+              }
+            },
+            tooltip: {
+              container: {
+                background: 'rgba(255, 255, 255, 0.95)',
+                color: '#374151',
+                fontSize: '13px',
+                fontFamily: 'Arial Rounded MT, Arial, sans-serif',
+                borderRadius: '8px',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                border: '1px solid rgba(0, 0, 0, 0.1)',
+                backdropFilter: 'blur(8px)'
+              }
+            }
+          }}
           tooltip={({ id, value, indexValue, color }) => (
-            <div className="chart-tooltip">
+            <div className="custom-chart-tooltip">
               <div className="tooltip-header">
                 <span className="tooltip-color" style={{ backgroundColor: color }}></span>
-                <strong>{id}</strong>
+                <strong>{indexValue}</strong>
               </div>
               <div className="tooltip-content">
-                <span>{indexValue}: {value.toLocaleString()}</span>
+                <span>Waivers: {value.toLocaleString()}</span>
               </div>
             </div>
           )}
           role="application"
           ariaLabel="Waiver statistics bar chart"
-          barAriaLabel={e => `${e.id}: ${e.formattedValue} waivers in ${e.indexValue}`}
+          barAriaLabel={e => `${e.indexValue}: ${e.formattedValue} waivers`}
         />
       )}
       
