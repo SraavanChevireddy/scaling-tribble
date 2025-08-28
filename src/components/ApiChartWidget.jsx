@@ -29,7 +29,7 @@ const ApiChartWidget = ({ rect, timeRange = 'monthly' }) => {
           data={chartData}
           keys={['waivers', 'expired']}
           indexBy="month"
-          margin={{ top: 50, right: 60, bottom: 50, left: 60 }}
+          margin={{ top: 40, right: 40, bottom: 40, left: 40 }}
           padding={0.3}
           valueScale={{ type: 'linear' }}
           indexScale={{ type: 'band', round: true }}
@@ -41,12 +41,12 @@ const ApiChartWidget = ({ rect, timeRange = 'monthly' }) => {
           axisTop={null}
           axisRight={null}
           axisBottom={{
-            tickSize: 5,
-            tickPadding: 5,
+            tickSize: 3,
+            tickPadding: 3,
             tickRotation: 0,
             legend: 'Period',
             legendPosition: 'middle',
-            legendOffset: 32
+            legendOffset: 30
           }}
           axisLeft={{
             tickSize: 5,
@@ -56,8 +56,9 @@ const ApiChartWidget = ({ rect, timeRange = 'monthly' }) => {
             legendPosition: 'middle',
             legendOffset: -40
           }}
-          labelSkipWidth={12}
-          labelSkipHeight={12}
+          labelSkipWidth={10}
+          labelSkipHeight={10}
+          enableLabel={false}
           labelTextColor={{
             from: 'color',
             modifiers: [['darker', 1.6]]
@@ -65,17 +66,17 @@ const ApiChartWidget = ({ rect, timeRange = 'monthly' }) => {
           legends={[
             {
               dataFrom: 'keys',
-              anchor: 'bottom-right',
-              direction: 'column',
+              anchor: 'top',
+              direction: 'row',
               justify: false,
-              translateX: 120,
-              translateY: 0,
+              translateX: 0,
+              translateY: -15,
               itemsSpacing: 2,
-              itemWidth: 100,
-              itemHeight: 20,
+              itemWidth: 60,
+              itemHeight: 15,
               itemDirection: 'left-to-right',
               itemOpacity: 0.85,
-              symbolSize: 20,
+              symbolSize: 10,
               effects: [
                 {
                   on: 'hover',
