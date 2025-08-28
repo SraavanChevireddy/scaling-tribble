@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
+import useApplications from '../hooks/useApplications';
 
-const DataRangeFilter = ({ onRangeChange }) => {
-  const [selectedRange, setSelectedRange] = useState(null); // Default to null so we can show 'Select'
+const ApplicationFilter = ({ onApplicationChange }) => {
+  const [selectedApplication, setSelectedApplication] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   
-  const rangeOptions = [7, 30, 60, 90];
+  const { applications, loading, error } = useApplications();
   
   // Handle clicks outside of the dropdown
   useEffect(() => {
@@ -25,10 +26,10 @@ const DataRangeFilter = ({ onRangeChange }) => {
   }, [isDropdownOpen]);
   
   const handleChange = (value) => {
-    setSelectedRange(value);
+    setSelectedApplication(value);
     setIsDropdownOpen(false);
-    if (onRangeChange) {
-      onRangeChange(value);
+    if (onApplicationChange) {
+      onApplicationChange(value);
     }
   };
   
@@ -40,22 +41,26 @@ const DataRangeFilter = ({ onRangeChange }) => {
     <div className="data-range-filter">
       <div className="data-range-container">
         <div className="data-range-layout">
-          <div className="data-range-label">Data Range:</div>
+          <div className="data-range-label">App: </div>
           <div className="data-range-dropdown-container" ref={dropdownRef}>
             <button onClick={toggleDropdown} className="data-range-dropdown-button">
-              {selectedRange ? `${selectedRange} days` : 'Select'}
+              {selectedApplication || 'Select'}
             </button>
             {isDropdownOpen && (
               <div className="data-range-dropdown">
-                {rangeOptions.map((option) => (
-                  <div 
-                    key={option} 
-                    className={`data-range-option ${selectedRange === option ? 'selected' : ''}`}
-                    onClick={() => handleChange(option)}
-                  >
-                    {option} days
-                  </div>
-                ))}
+                {loading ? (
+                  <div className="data-range-option">Loading...</div>
+                ) : (
+                  applications.map((app) => (
+                    <div 
+                      key={app} 
+                      className={`data-range-option ${selectedApplication === app ? 'selected' : ''}`}
+                      onClick={() => handleChange(app)}
+                    >
+                      {app}
+                    </div>
+                  ))
+                )}
               </div>
             )}
           </div>
@@ -65,4 +70,4 @@ const DataRangeFilter = ({ onRangeChange }) => {
   );
 };
 
-export default DataRangeFilter;
+export default ApplicationFilter;

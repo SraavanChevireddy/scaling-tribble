@@ -77,7 +77,7 @@ const Sidebar = ({ sidebarCollapsed, setSidebarCollapsed, widgetActions }) => {
       title: 'Live Metrics',
       subtitle: 'Real-time KPI',
       keywords: ['api', 'live', 'real-time', 'metric', 'kpi', 'data', 'waiver'],
-      action: () => addNewApiMetric('1x1', 'totalWaivers'),
+      action: () => addNewApiMetric('2x1', 'totalWaivers'),
       icon: (
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
           <path d="M3 12l2-2 4 4 6-6 6 2v6H3v-4z" fill="currentColor" opacity="0.2"/>
@@ -123,7 +123,7 @@ const Sidebar = ({ sidebarCollapsed, setSidebarCollapsed, widgetActions }) => {
       title: '7-Day Trends',
       subtitle: 'Expiring Soon',
       keywords: ['api', 'live', 'trends', 'percentage', 'change', 'waiver', 'expiring', '7-day', '7', 'soon'],
-      action: () => addNewApiTrends('1x1', 'expiring7Days'),
+      action: () => addNewApiTrends('2x1', 'expiring7Days'),
       icon: (
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
           <path d="M3 17l6-6 4 4 8-8" stroke="currentColor" strokeWidth="2" fill="none"/>
@@ -139,7 +139,7 @@ const Sidebar = ({ sidebarCollapsed, setSidebarCollapsed, widgetActions }) => {
       title: '30-Day Trends',
       subtitle: 'Monthly View',
       keywords: ['api', 'live', 'trends', 'percentage', 'change', 'waiver', 'expiring', '30-day', '30', 'monthly', 'month'],
-      action: () => addNewApiTrends('1x1', 'expiring30Days'),
+      action: () => addNewApiTrends('2x1', 'expiring30Days'),
       icon: (
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
           <path d="M3 17l6-6 4 4 8-8" stroke="currentColor" strokeWidth="2" fill="none"/>
@@ -155,7 +155,7 @@ const Sidebar = ({ sidebarCollapsed, setSidebarCollapsed, widgetActions }) => {
       title: '90-Day Trends',
       subtitle: 'Quarterly View',
       keywords: ['api', 'live', 'trends', 'percentage', 'change', 'waiver', 'expiring', '90-day', '90', 'quarterly', 'quarter'],
-      action: () => addNewApiTrends('1x1', 'expiring90Days'),
+      action: () => addNewApiTrends('2x1', 'expiring90Days'),
       icon: (
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
           <path d="M3 7l6 6 4-4 8 8" stroke="currentColor" strokeWidth="2" fill="none"/>
@@ -171,7 +171,7 @@ const Sidebar = ({ sidebarCollapsed, setSidebarCollapsed, widgetActions }) => {
       title: 'Never Expires',
       subtitle: 'Permanent Status',
       keywords: ['api', 'live', 'trends', 'percentage', 'change', 'waiver', 'never', 'expires', 'permanent', 'perpetual'],
-      action: () => addNewApiTrends('1x1', 'neverExpires'),
+      action: () => addNewApiTrends('2x1', 'neverExpires'),
       icon: (
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
           <path d="M12 2v20M2 12h20" stroke="currentColor" strokeWidth="2" fill="none"/>

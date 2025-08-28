@@ -47,10 +47,17 @@ const ApiMetricWidget = ({ rect, handleResizeStart, metricType = 'totalWaivers' 
 
   const metricData = getMetricData(metricType, metrics)
 
+  // Get layout class based on size
+  const getLayoutClass = () => {
+    if (rect.size === '2x1') return 'metric-expanded'
+    if (rect.size === '1x2') return 'metric-vertical'
+    return 'metric-expanded'
+  }
+
   // Show loading state
   if (loading && Object.keys(metrics).length === 0) {
     return (
-      <div className={`metric-container ${rect.size === '1x1' ? 'metric-compact' : 'metric-expanded'}`}>
+      <div className={`metric-container ${getLayoutClass()}`}>
         <div className="widget-info metric-info">
           <span className="size-label">Metric</span>
         </div>
@@ -59,7 +66,10 @@ const ApiMetricWidget = ({ rect, handleResizeStart, metricType = 'totalWaivers' 
             <h3 className="metric-title">Loading...</h3>
             <p className="metric-subtitle">Fetching data</p>
           </div>
-          <div className="metric-value" style={{ color: '#6b7280' }}>
+          <div className="metric-value" style={{ 
+            color: '#6b7280',
+            fontSize: rect.size === '1x2' ? '2.5em' : '2.2em'
+          }}>
             <div className="loading-spinner">⟳</div>
           </div>
         </div>
@@ -74,7 +84,7 @@ const ApiMetricWidget = ({ rect, handleResizeStart, metricType = 'totalWaivers' 
   }
 
   return (
-    <div className={`metric-container ${rect.size === '1x1' ? 'metric-compact' : 'metric-expanded'}`}>
+    <div className={`metric-container ${getLayoutClass()}`}>
       <div className="widget-info metric-info">
         <span className="size-label">Live Metric</span>
         {error && <span className="error-indicator" title={error}>⚠</span>}
@@ -88,8 +98,13 @@ const ApiMetricWidget = ({ rect, handleResizeStart, metricType = 'totalWaivers' 
             {error ? 'Connection Error' : metricData.subtitle}
           </p>
         </div>
-        <div className="metric-value" style={{ color: metricData.color }}>
-          {metricData.value}
+        <div className="metric-value" style={{ 
+          color: metricData.color,
+          fontSize: rect.size === '1x2' ? '2.5em' : '2.2em',
+          fontWeight: '700',
+          lineHeight: '1'
+        }}>
+          {error ? 'N/A' : metricData.value}
         </div>
       </div>
       

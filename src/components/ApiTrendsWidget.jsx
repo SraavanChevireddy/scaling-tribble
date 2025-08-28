@@ -116,8 +116,16 @@ const ApiTrendsWidget = ({ rect, handleResizeStart, trendType = 'expiring7Days' 
     )
   }
 
+  // Get layout class based on size
+  const getLayoutClass = () => {
+    if (rect.size === '1x1') return 'metric-compact'
+    if (rect.size === '2x1') return 'metric-expanded'
+    if (rect.size === '1x2') return 'metric-vertical'
+    return 'metric-expanded'
+  }
+
   return (
-    <div className={`metric-container ${rect.size === '1x1' ? 'metric-compact' : 'metric-expanded'}`}>
+    <div className={`metric-container ${getLayoutClass()}`}>
       <div className="widget-info metric-info">
         <span className="size-label">Live Trends</span>
         {error && <span className="error-indicator" title={error}>⚠</span>}
@@ -133,7 +141,7 @@ const ApiTrendsWidget = ({ rect, handleResizeStart, trendType = 'expiring7Days' 
         </div>
         <div className="metric-value trends-value" style={{ 
           color: getTrendColor(),
-          fontSize: rect.size === '1x1' ? '1.8em' : '1.6em',
+          fontSize: rect.size === '1x1' ? '1.8em' : rect.size === '1x2' ? '2.0em' : '1.6em',
           fontWeight: '700',
           lineHeight: '1',
           display: 'flex',
@@ -157,9 +165,9 @@ const ApiTrendsWidget = ({ rect, handleResizeStart, trendType = 'expiring7Days' 
               <span>{formatPercentage(trendData.calculatedTrend)}</span>
             </div>
           )}
-          {!error && rect.size === '2x1' && (
+          {!error && (rect.size === '2x1' || rect.size === '1x2') && (
             <div className="trend-details" style={{ 
-              fontSize: '0.6em', 
+              fontSize: rect.size === '1x2' ? '0.7em' : '0.6em', 
               color: '#6b7280', 
               marginTop: '4px', 
               lineHeight: '1.1',
