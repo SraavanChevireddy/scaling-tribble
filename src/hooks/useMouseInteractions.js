@@ -9,8 +9,6 @@ export const useMouseInteractions = (widgetManagement) => {
     setDragState,
     resizeState,
     setResizeState,
-    findValidPosition,
-    validateResizeOperation,
     getCanvasBounds,
     getClosestSize
   } = widgetManagement
@@ -59,12 +57,9 @@ export const useMouseInteractions = (widgetManagement) => {
 
       const newX = e.clientX - dragState.offsetX
       const newY = e.clientY - dragState.offsetY
-      const otherRects = rectangles.filter(r => r.id !== dragState.id)
-      
-      const validPosition = findValidPosition(movingRect, newX, newY, otherRects)
 
       setRectangles(prev => prev.map(r => 
-        r.id === dragState.id ? { ...r, x: validPosition.x, y: validPosition.y } : r
+        r.id === dragState.id ? { ...r, x: newX, y: newY } : r
       ))
     }
 
@@ -76,21 +71,18 @@ export const useMouseInteractions = (widgetManagement) => {
       const deltaX = e.clientX - resizeState.startX
       const deltaY = e.clientY - resizeState.startY
       
-      const desiredWidth = Math.max(GRID_SIZE, resizeState.startWidth + deltaX)
-      const desiredHeight = Math.max(GRID_SIZE, resizeState.startHeight + deltaY)
-      
-      const otherRects = rectangles.filter(r => r.id !== resizeState.id)
-      const validDimensions = validateResizeOperation(resizingRect, desiredWidth, desiredHeight, otherRects)
+      const newWidth = Math.max(GRID_SIZE, resizeState.startWidth + deltaX)
+      const newHeight = Math.max(GRID_SIZE, resizeState.startHeight + deltaY)
 
       setRectangles(prev => prev.map(r => 
         r.id === resizeState.id ? { 
           ...r, 
-          width: validDimensions.width,
-          height: validDimensions.height
+          width: newWidth,
+          height: newHeight
         } : r
       ))
     }
-  }, [dragState, resizeState, rectangles, findValidPosition, validateResizeOperation, setRectangles])
+  }, [dragState, resizeState, rectangles, setRectangles])
 
   const handleMouseUp = useCallback(() => {
     if (resizeState.id) {
@@ -114,7 +106,7 @@ export const useMouseInteractions = (widgetManagement) => {
         
         const finalDimensions = WIDGET_SIZES[closestSize]
         
-        // Since drag logic prevents collisions, just snap to closest size
+        // Snap to closest size
         setRectangles(prev => prev.map(r => 
           r.id === resizeState.id ? { 
             ...r, 
