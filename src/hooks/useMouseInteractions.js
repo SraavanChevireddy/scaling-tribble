@@ -104,6 +104,30 @@ export const useMouseInteractions = (widgetManagement) => {
           }
         }
         
+        // For api-metric widgets, restrict to only 2x1 and 1x2
+        if (rect.type === 'api-metric') {
+          const validApiMetricSizes = ['2x1', '1x2']
+          const currentSize = closestSize
+          if (!validApiMetricSizes.includes(currentSize)) {
+            // If current size is not valid for api-metrics, pick the closest valid one
+            const distance2x1 = Math.abs(rect.width - WIDGET_SIZES['2x1'].width) + Math.abs(rect.height - WIDGET_SIZES['2x1'].height)
+            const distance1x2 = Math.abs(rect.width - WIDGET_SIZES['1x2'].width) + Math.abs(rect.height - WIDGET_SIZES['1x2'].height)
+            closestSize = distance2x1 < distance1x2 ? '2x1' : '1x2'
+          }
+        }
+        
+        // For api-trends widgets, restrict to only 2x1 and 1x2
+        if (rect.type === 'api-trends') {
+          const validTrendSizes = ['2x1', '1x2']
+          const currentSize = closestSize
+          if (!validTrendSizes.includes(currentSize)) {
+            // If current size is not valid for trends, pick the closest valid one
+            const distance2x1 = Math.abs(rect.width - WIDGET_SIZES['2x1'].width) + Math.abs(rect.height - WIDGET_SIZES['2x1'].height)
+            const distance1x2 = Math.abs(rect.width - WIDGET_SIZES['1x2'].width) + Math.abs(rect.height - WIDGET_SIZES['1x2'].height)
+            closestSize = distance2x1 < distance1x2 ? '2x1' : '1x2'
+          }
+        }
+        
         const finalDimensions = WIDGET_SIZES[closestSize]
         
         // Snap to closest size

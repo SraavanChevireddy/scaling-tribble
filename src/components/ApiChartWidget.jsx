@@ -24,13 +24,16 @@ const ApiChartWidget = ({ rect, timeRange = 'monthly' }) => {
       borderRadius: '12px',
       overflow: 'hidden'
     }}>
-      <div className="widget-info chart-info">
-        <span className="size-label">Live Chart</span>
-        <div className="chart-controls">
-          {error && <span className="error-indicator" title={error}>⚠</span>}
-          {loading && <span className="loading-indicator" title="Loading...">⟳</span>}
+      {/* Only show info label when not in expanded view */}
+      {!rect.expandedView && (
+        <div className="widget-info chart-info">
+          <span className="size-label">Live Chart</span>
+          <div className="chart-controls">
+            {error && <span className="error-indicator" title={error}>⚠</span>}
+            {loading && <span className="loading-indicator" title="Loading...">⟳</span>}
+          </div>
         </div>
-      </div>
+      )}
       
       {!showChart || (loading && !chartData.length) ? (
         <div className="chart-loading-delay">

@@ -1285,6 +1285,40 @@
   box-sizing: border-box;
 }
 
+/* 1x2 - Vertical Layout (Similar to 1x1 but with more vertical space) */
+.metric-container.metric-vertical {
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.metric-container.metric-vertical .metric-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  gap: 8px;
+}
+
+.metric-container.metric-vertical .metric-header {
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+
+.metric-container.metric-vertical .metric-value {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 0.9;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
 
 .metric-title {
   font-size: 16px;
@@ -1603,6 +1637,14 @@
 .modal-funnel {
   padding: 0;
   overflow: visible;
+}
+
+.modal-chart {
+  padding: 20px;
+  overflow: visible;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Filter Styles - Capsule shaped filters on the right */

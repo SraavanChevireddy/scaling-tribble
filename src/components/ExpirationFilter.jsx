@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 const ExpirationFilter = ({ onExpirationChange }) => {
   const [selectedExpiration, setSelectedExpiration] = useState(null); // Default to null to show 'Select'
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState('left');
   const dropdownRef = useRef(null);
   
   // Longer option labels need proper dropdown width
@@ -39,6 +40,22 @@ const ExpirationFilter = ({ onExpirationChange }) => {
   };
   
   const toggleDropdown = () => {
+    if (!isDropdownOpen) {
+      // Calculate position before opening dropdown
+      if (dropdownRef.current) {
+        const rect = dropdownRef.current.getBoundingClientRect();
+        const dropdownWidth = 200; // Approximate dropdown width
+        const screenWidth = window.innerWidth;
+        const spaceOnRight = screenWidth - rect.right;
+        
+        // If there's not enough space on the right, position from the right edge
+        if (spaceOnRight < dropdownWidth) {
+          setDropdownPosition('right');
+        } else {
+          setDropdownPosition('left');
+        }
+      }
+    }
     setIsDropdownOpen(!isDropdownOpen);
   };
 
@@ -58,7 +75,14 @@ const ExpirationFilter = ({ onExpirationChange }) => {
               {getSelectedLabel()}
             </button>
             {isDropdownOpen && (
-              <div className="data-range-dropdown">
+              <div 
+                className="data-range-dropdown"
+                style={{
+                  left: dropdownPosition === 'left' ? '0' : 'auto',
+                  right: dropdownPosition === 'right' ? '0' : 'auto',
+                  minWidth: '200px'
+                }}
+              >
                 {expirationOptions.map((option) => (
                   <div 
                     key={option.id} 

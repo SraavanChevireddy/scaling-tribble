@@ -5,7 +5,7 @@ const WaiverFilter = ({ onWaiverChange }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   
-  const waiverOptions = ['Root', 'Organisational', 'App', 'Manual', 'Auto'];
+  const waiverOptions = ['Root', 'Organisational', 'Manual', 'Auto'];
   
   // Handle clicks outside of the dropdown
   useEffect(() => {

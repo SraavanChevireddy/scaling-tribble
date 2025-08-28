@@ -5,6 +5,7 @@ import Sidebar from './components/Sidebar'
 import Widget from './components/Widget'
 import DataRangeFilter from './components/DataRangeFilter'
 import WaiverFilter from './components/WaiverFilter'
+import ApplicationFilter from './components/ApplicationFilter'
 import ExpirationFilter from './components/ExpirationFilter'
 import GetStartedDialog from './components/GetStartedDialog'
 import './App.css'
@@ -15,6 +16,7 @@ function App() {
   const [showGetStarted, setShowGetStarted] = useState(false)
   const [selectedDataRange, setSelectedDataRange] = useState(null)
   const [selectedWaiver, setSelectedWaiver] = useState(null)
+  const [selectedApplication, setSelectedApplication] = useState(null)
   const [selectedExpiration, setSelectedExpiration] = useState(null)
   
   // Check if Get Started dialog should be shown
@@ -84,6 +86,7 @@ function App() {
           <div className="filters-wrapper">
             <DataRangeFilter onRangeChange={setSelectedDataRange} />
             <WaiverFilter onWaiverChange={setSelectedWaiver} />
+            <ApplicationFilter onApplicationChange={setSelectedApplication} />
             <ExpirationFilter onExpirationChange={setSelectedExpiration} />
           </div>
         </div>
