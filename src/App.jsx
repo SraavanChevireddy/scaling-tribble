@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useWidgetManagement } from './hooks/useWidgetManagement'
 import { useMouseInteractions } from './hooks/useMouseInteractions'
+import { WIDGET_SIZES, SAMPLE_CHART_DATA, SAMPLE_FUNNEL_DATA } from './constants/widgetConstants'
 import Sidebar from './components/Sidebar'
 import Widget from './components/Widget'
 import DataRangeFilter from './components/DataRangeFilter'
@@ -62,6 +63,37 @@ function App() {
     setSidebarCollapsed(false);
   };
 
+  // Handle starting from template - adds 7 days trend widget
+  const handleStartFromTemplate = () => {
+    const size = WIDGET_SIZES['1x1']
+    
+    const widget = {
+      id: 1,
+      x: 50,
+      y: 120, // Start below the title area
+      width: size.width,
+      height: size.height,
+      gridCols: size.cols,
+      gridRows: size.rows,
+      color: '#ffffff',
+      isDragging: false,
+      isResizing: false,
+      size: '1x1',
+      type: 'api-trends',
+      trendType: 'expiring7Days',
+      isApiPowered: true,
+      isNew: true
+    }
+
+    // Add the widget
+    setRectangles([widget])
+
+    // Remove the "new" flag after animation completes
+    setTimeout(() => {
+      setRectangles(prev => prev.map(w => ({ ...w, isNew: false })))
+    }, 500)
+  };
+
   // Widget actions for sidebar
   const widgetActions = {
     addNewRectangle,
@@ -120,7 +152,7 @@ function App() {
           ))}
           
           {rectangles.length === 0 && (
-            <EmptyState onOpenSidebar={handleOpenSidebar} />
+            <EmptyState onOpenSidebar={handleOpenSidebar} onStartFromTemplate={handleStartFromTemplate} />
           )}
         </div>
       </div>

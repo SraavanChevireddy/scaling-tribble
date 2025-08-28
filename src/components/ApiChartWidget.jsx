@@ -19,19 +19,49 @@ const ApiChartWidget = ({ rect, timeRange = 'monthly' }) => {
     return () => clearTimeout(timer)
   }, [])
 
+  // Get current month date range
+  const getCurrentMonthRange = () => {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = now.getMonth()
+    
+    const firstDay = new Date(year, month, 1)
+    const lastDay = new Date(year, month + 1, 0)
+    
+    const monthName = firstDay.toLocaleDateString('en-US', { month: 'short' })
+    const startDay = firstDay.getDate()
+    const endDay = lastDay.getDate()
+    
+    return `${monthName} ${startDay} - ${endDay}`
+  }
+
   return (
     <div className="chart-container" style={{ 
       borderRadius: '12px',
       overflow: 'hidden'
     }}>
-      <div className="widget-info chart-info">
-        <span className="size-label">Live Chart</span>
-        <div className="chart-controls">
-          {error && <span className="error-indicator" title={error}>⚠</span>}
-          {loading && <span className="loading-indicator" title="Loading...">⟳</span>}
+      <div style={{ 
+        position: 'absolute', 
+        top: '8px', 
+        left: '10px', 
+        zIndex: 10
+      }}>
+        <div style={{
+          fontSize: '11px',
+          fontWeight: '400',
+          marginBottom: '2px',
+          color: 'black'
+        }}>
+          {getCurrentMonthRange()}
         </div>
-      </div>
-      
+        <div style={{
+          fontSize: '10px',
+          fontWeight: '300',
+          color: '#6b7280'
+        }}>
+          This Month
+        </div>
+      </div>      
       {!showChart || (loading && !chartData.length) ? (
         <div className="chart-loading-delay">
           <div className="loading-spinner-large">⟳</div>
@@ -42,7 +72,7 @@ const ApiChartWidget = ({ rect, timeRange = 'monthly' }) => {
           data={chartData}
           keys={['waivers']}
           indexBy="month"
-          margin={{ top: 50, right: 60, bottom: 60, left: 80 }}
+          margin={{ top: 45, right: 15, bottom: 35, left: 40 }}
           padding={0.4}
           valueScale={{ type: 'linear' }}
           indexScale={{ type: 'band', round: true }}
@@ -153,16 +183,6 @@ const ApiChartWidget = ({ rect, timeRange = 'monthly' }) => {
           </div>
         </div>
       )}
-      
-      {/* Data source indicator */}
-      <div className="data-source-indicator">
-        <span className={`connection-status ${error ? 'error' : 'connected'}`}>
-          {error ? '⚠ Offline Data' : '🟢 Live Data'}
-        </span>
-        <span className="time-range-indicator">
-          {timeRange.charAt(0).toUpperCase() + timeRange.slice(1)} View
-        </span>
-      </div>
     </div>
   )
 }

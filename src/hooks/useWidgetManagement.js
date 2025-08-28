@@ -117,7 +117,7 @@ export const useWidgetManagement = () => {
 
   const addNewChart = useCallback(() => {
     const newId = Math.max(...rectangles.map(r => r.id), 0) + 1
-    const size = WIDGET_SIZES['3x3']
+    const size = WIDGET_SIZES['2x2']
     const position = findNextGridPosition(size.cols, size.rows, rectangles)
     
     const newChart = {
@@ -131,7 +131,7 @@ export const useWidgetManagement = () => {
       color: '#ffffff',
       isDragging: false,
       isResizing: false,
-      size: '3x3',
+      size: '2x2',
       type: 'chart',
       chartData: SAMPLE_CHART_DATA,
       isNew: true
@@ -297,7 +297,7 @@ export const useWidgetManagement = () => {
 
   const addNewApiChart = useCallback((timeRange = 'monthly') => {
     const newId = Math.max(...rectangles.map(r => r.id), 0) + 1
-    const size = WIDGET_SIZES['3x3']
+    const size = WIDGET_SIZES['2x2']
     const position = findNextGridPosition(size.cols, size.rows, rectangles)
     
     const newChart = {
@@ -311,7 +311,7 @@ export const useWidgetManagement = () => {
       color: '#ffffff',
       isDragging: false,
       isResizing: false,
-      size: '3x3',
+      size: '2x2',
       type: 'api-chart',
       timeRange: timeRange,
       isNew: true,
