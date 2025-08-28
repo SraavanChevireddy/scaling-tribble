@@ -7,11 +7,12 @@ import DataRangeFilter from './components/DataRangeFilter'
 import WaiverFilter from './components/WaiverFilter'
 import ExpirationFilter from './components/ExpirationFilter'
 import GetStartedDialog from './components/GetStartedDialog'
+import EmptyState from './components/EmptyState'
 import './App.css'
 import './styles/api-widgets.css'
 
 function App() {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true)
   const [showGetStarted, setShowGetStarted] = useState(false)
   const [selectedDataRange, setSelectedDataRange] = useState(null)
   const [selectedWaiver, setSelectedWaiver] = useState(null)
@@ -54,6 +55,11 @@ function App() {
   // Delete widget handler
   const handleDeleteWidget = (id) => {
     setRectangles(prev => prev.filter(rect => rect.id !== id));
+  };
+
+  // Handle opening sidebar from empty state
+  const handleOpenSidebar = () => {
+    setSidebarCollapsed(false);
   };
 
   // Widget actions for sidebar
@@ -112,6 +118,10 @@ function App() {
               onDeleteWidget={handleDeleteWidget}
             />
           ))}
+          
+          {rectangles.length === 0 && (
+            <EmptyState onOpenSidebar={handleOpenSidebar} />
+          )}
         </div>
       </div>
       
