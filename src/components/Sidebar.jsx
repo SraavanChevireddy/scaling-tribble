@@ -77,7 +77,7 @@ const Sidebar = ({ sidebarCollapsed, setSidebarCollapsed, widgetActions }) => {
       title: 'Live Metrics',
       subtitle: 'Real-time KPI',
       keywords: ['api', 'live', 'real-time', 'metric', 'kpi', 'data', 'waiver'],
-      action: () => addNewApiMetric('2x1', 'totalWaivers'),
+      action: () => addNewApiMetric('1x1', 'totalWaivers'),
       icon: (
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
           <path d="M3 12l2-2 4 4 6-6 6 2v6H3v-4z" fill="currentColor" opacity="0.2"/>
@@ -120,10 +120,10 @@ const Sidebar = ({ sidebarCollapsed, setSidebarCollapsed, widgetActions }) => {
     },
     {
       id: 'api-trends-7',
-      title: '7-Day Trends',
+      title: '7 Days',
       subtitle: 'Expiring Soon',
       keywords: ['api', 'live', 'trends', 'percentage', 'change', 'waiver', 'expiring', '7-day', '7', 'soon'],
-      action: () => addNewApiTrends('2x1', 'expiring7Days'),
+      action: () => addNewApiTrends('1x1', 'expiring7Days'),
       icon: (
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
           <path d="M3 17l6-6 4 4 8-8" stroke="currentColor" strokeWidth="2" fill="none"/>
@@ -136,10 +136,10 @@ const Sidebar = ({ sidebarCollapsed, setSidebarCollapsed, widgetActions }) => {
     },
     {
       id: 'api-trends-30',
-      title: '30-Day Trends',
+      title: '30 Days',
       subtitle: 'Monthly View',
       keywords: ['api', 'live', 'trends', 'percentage', 'change', 'waiver', 'expiring', '30-day', '30', 'monthly', 'month'],
-      action: () => addNewApiTrends('2x1', 'expiring30Days'),
+      action: () => addNewApiTrends('1x1', 'expiring30Days'),
       icon: (
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
           <path d="M3 17l6-6 4 4 8-8" stroke="currentColor" strokeWidth="2" fill="none"/>
@@ -152,10 +152,10 @@ const Sidebar = ({ sidebarCollapsed, setSidebarCollapsed, widgetActions }) => {
     },
     {
       id: 'api-trends-90',
-      title: '90-Day Trends',
+      title: '90 Days',
       subtitle: 'Quarterly View',
       keywords: ['api', 'live', 'trends', 'percentage', 'change', 'waiver', 'expiring', '90-day', '90', 'quarterly', 'quarter'],
-      action: () => addNewApiTrends('2x1', 'expiring90Days'),
+      action: () => addNewApiTrends('1x1', 'expiring90Days'),
       icon: (
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
           <path d="M3 7l6 6 4-4 8 8" stroke="currentColor" strokeWidth="2" fill="none"/>
@@ -171,12 +171,27 @@ const Sidebar = ({ sidebarCollapsed, setSidebarCollapsed, widgetActions }) => {
       title: 'Never Expires',
       subtitle: 'Permanent Status',
       keywords: ['api', 'live', 'trends', 'percentage', 'change', 'waiver', 'never', 'expires', 'permanent', 'perpetual'],
-      action: () => addNewApiTrends('2x1', 'neverExpires'),
+      action: () => addNewApiTrends('1x1', 'neverExpires'),
       icon: (
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
           <path d="M12 2v20M2 12h20" stroke="currentColor" strokeWidth="2" fill="none"/>
           <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" fill="none"/>
           <circle cx="20" cy="4" r="2" fill="#8b5cf6" stroke="white" strokeWidth="1"/>
+        </svg>
+      ),
+      iconClass: 'trends-icon api-icon'
+    },
+    {
+      id: 'api-trends-live',
+      title: 'Live Waivers',
+      subtitle: 'Active Status',
+      keywords: ['api', 'live', 'trends', 'percentage', 'change', 'waiver', 'active', 'current', 'status'],
+      action: () => addNewApiTrends('1x1', 'liveWaivers'),
+      icon: (
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="3" fill="currentColor"/>
+          <path d="M12 1v6m0 8v6M4.22 4.22l4.24 4.24m8.48 0l4.24-4.24M1 12h6m8 0h6M4.22 19.78l4.24-4.24m8.48 0l4.24 4.24" stroke="currentColor" strokeWidth="2"/>
+          <circle cx="20" cy="4" r="2" fill="#10b981" stroke="white" strokeWidth="1"/>
         </svg>
       ),
       iconClass: 'trends-icon api-icon'
@@ -242,7 +257,7 @@ const Sidebar = ({ sidebarCollapsed, setSidebarCollapsed, widgetActions }) => {
             {filteredWidgets.length === 0 && searchTerm && (
               <div className="no-results">
                 <p>No widgets found for "{searchTerm}"</p>
-                <span>Try searching for: basic, metric, chart, funnel, 7-day, 30-day, 90-day, never, trends, or waiver</span>
+                <span>Try searching for: basic, metric, chart, funnel, 7-day, 30-day, 90-day, never, live, trends, or waiver</span>
               </div>
             )}
           </div>

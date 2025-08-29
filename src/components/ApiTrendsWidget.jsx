@@ -141,62 +141,72 @@ const ApiTrendsWidget = ({ rect, handleResizeStart, trendType = 'expiring7Days' 
         </div>
         <div className="metric-value trends-value" style={{ 
           color: getTrendColor(),
-          fontSize: rect.size === '1x1' ? '1.8em' : rect.size === '1x2' ? '2.0em' : '1.6em',
+          fontSize: rect.size === '1x1' ? '1.4em' : '1.0em', // Further reduced for larger widgets
           fontWeight: '700',
-          lineHeight: '1',
+          lineHeight: '1.0',
           display: 'flex',
-          alignItems: rect.size === '1x1' ? 'center' : 'flex-start',
-          justifyContent: rect.size === '1x1' ? 'center' : 'flex-start',
-          gap: '4px',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '2px', // Reduced gap
           flexWrap: 'wrap',
-          flexDirection: rect.size === '1x1' ? 'row' : 'column',
+          flexDirection: 'column',
           height: '100%',
-          overflow: 'hidden'
+          overflow: 'visible',
+          textAlign: 'center',
+          padding: '2px' // Minimal padding
         }}>
           {error ? 'N/A' : (
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '3px', 
-              textAlign: rect.size === '1x1' ? 'center' : 'left',
-              justifyContent: rect.size === '1x1' ? 'center' : 'flex-start'
-            }}>
-              <span style={{ fontSize: '0.8em' }}>{getTrendArrow()}</span>
-              <span>{formatPercentage(trendData.calculatedTrend)}</span>
-            </div>
-          )}
-          {!error && (rect.size === '2x1' || rect.size === '1x2') && (
-            <div className="trend-details" style={{ 
-              fontSize: rect.size === '1x2' ? '0.7em' : '0.6em', 
-              color: '#6b7280', 
-              marginTop: '4px', 
-              lineHeight: '1.1',
-              textAlign: 'left',
-              width: 'calc(100% - 8px)',
-              overflow: 'hidden',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '2px',
-              paddingRight: '4px',
-              boxSizing: 'border-box'
-            }}>
+            <>
+              {/* Main trend percentage */}
               <div style={{ 
-                overflow: 'hidden', 
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                maxWidth: '100%'
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '4px', 
+                textAlign: 'center',
+                justifyContent: 'center',
+                alignSelf: 'center',
+                fontSize: '1em',
+                fontWeight: '700',
+                width: '100%',
+                flexShrink: 0
               }}>
-                Chg: {formatPercentage(trendData.changePercentage)}
+                <span style={{ fontSize: '0.9em' }}>{getTrendArrow()}</span>
+                <span>{formatPercentage(trendData.calculatedTrend)}</span>
               </div>
-              <div style={{ 
-                overflow: 'hidden', 
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                maxWidth: '100%'
-              }}>
-                Prev: {trendData.previousValue}
-              </div>
-            </div>
+              
+              {/* Additional details for larger widgets - always below main percentage */}
+              {(rect.size === '2x1' || rect.size === '1x2') && (
+                <div style={{ 
+                  fontSize: '0.7em', // Slightly larger for visibility
+                  color: '#374151', // Darker color for better visibility
+                  lineHeight: '1.2',
+                  textAlign: rect.size === '1x2' ? 'left' : 'center',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1px',
+                  alignSelf: rect.size === '1x2' ? 'flex-start' : 'center',
+                  marginTop: '2px', // Reduced margin
+                  width: '100%',
+                  fontWeight: '600', // Bolder
+                  paddingLeft: rect.size === '1x2' ? '8px' : '0',
+                  flexShrink: 0,
+                  maxWidth: '100%',
+                  boxSizing: 'border-box',
+                  padding: '2px 4px', // Added padding for better visibility
+                  background: 'rgba(255, 255, 255, 0.7)', // Light background
+                  borderRadius: '3px'
+                }}>
+                  <div style={{ width: '100%', whiteSpace: 'nowrap', overflow: 'visible' }}>
+                    Chg: {formatPercentage(trendData.changePercentage)}
+                  </div>
+                  <div style={{ width: '100%', whiteSpace: 'nowrap', overflow: 'visible' }}>
+                    Prev: {trendData.previousValue}
+                  </div>
+                </div>
+              )}
+              
+              {/* 1x1 widgets show only the main percentage - no additional data */}
+            </>
           )}
         </div>
       </div>
