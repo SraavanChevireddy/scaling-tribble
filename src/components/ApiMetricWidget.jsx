@@ -49,6 +49,7 @@ const ApiMetricWidget = ({ rect, handleResizeStart, metricType = 'totalWaivers' 
 
   // Get layout class based on size
   const getLayoutClass = () => {
+    if (rect.size === '1x1') return 'metric-compact'
     if (rect.size === '2x1') return 'metric-expanded'
     if (rect.size === '1x2') return 'metric-vertical'
     return 'metric-expanded'
@@ -68,7 +69,7 @@ const ApiMetricWidget = ({ rect, handleResizeStart, metricType = 'totalWaivers' 
           </div>
           <div className="metric-value" style={{ 
             color: '#6b7280',
-            fontSize: rect.size === '1x2' ? '2.5em' : '2.2em'
+            fontSize: rect.size === '1x1' ? '2.0em' : rect.size === '1x2' ? '2.5em' : '2.2em'
           }}>
             <div className="loading-spinner">⟳</div>
           </div>
@@ -100,9 +101,9 @@ const ApiMetricWidget = ({ rect, handleResizeStart, metricType = 'totalWaivers' 
         </div>
         <div className="metric-value" style={{ 
           color: metricData.color,
-          fontSize: rect.size === '1x2' ? '2.5em' : '2.2em',
+          fontSize: rect.size === '1x1' ? '2.0em' : rect.size === '1x2' ? '2.5em' : '2.2em',
           fontWeight: '700',
-          lineHeight: '1'
+          lineHeight: '1.1'
         }}>
           {error ? 'N/A' : metricData.value}
         </div>

@@ -19,7 +19,7 @@ export const useMouseInteractions = (widgetManagement) => {
     
     const rect = rectangles.find(r => r.id === rectId)
     if (!rect || rect.type === 'chart' || rect.type === 'funnel' || 
-        rect.type === 'api-chart' || rect.type === 'api-funnel') return
+        rect.type === 'api-funnel') return
 
     setResizeState({
       id: rectId,
@@ -66,7 +66,7 @@ export const useMouseInteractions = (widgetManagement) => {
     if (resizeState.id) {
       const resizingRect = rectangles.find(r => r.id === resizeState.id)
       if (!resizingRect || resizingRect.type === 'chart' || resizingRect.type === 'funnel' || 
-          resizingRect.type === 'api-chart' || resizingRect.type === 'api-funnel') return
+          resizingRect.type === 'api-funnel') return
 
       const deltaX = e.clientX - resizeState.startX
       const deltaY = e.clientY - resizeState.startY
@@ -88,43 +88,77 @@ export const useMouseInteractions = (widgetManagement) => {
     if (resizeState.id) {
       const rect = rectangles.find(r => r.id === resizeState.id)
       if (rect && rect.type !== 'chart' && rect.type !== 'funnel' && 
-          rect.type !== 'api-chart' && rect.type !== 'api-funnel') {
+          rect.type !== 'api-funnel') {
         // Find the best fitting grid size for current dimensions
         let closestSize = getClosestSize(rect.width, rect.height)
         
-        // For metric widgets, restrict to only 1x1 and 2x1
+        // For metric widgets, allow 1x1, 2x1, and 1x2
         if (rect.type === 'metric') {
-          const validMetricSizes = ['1x1', '2x1']
+          const validMetricSizes = ['1x1', '2x1', '1x2']
           const currentSize = closestSize
           if (!validMetricSizes.includes(currentSize)) {
             // If current size is not valid for metrics, pick the closest valid one
             const distance1x1 = Math.abs(rect.width - WIDGET_SIZES['1x1'].width) + Math.abs(rect.height - WIDGET_SIZES['1x1'].height)
             const distance2x1 = Math.abs(rect.width - WIDGET_SIZES['2x1'].width) + Math.abs(rect.height - WIDGET_SIZES['2x1'].height)
-            closestSize = distance1x1 < distance2x1 ? '1x1' : '2x1'
+            const distance1x2 = Math.abs(rect.width - WIDGET_SIZES['1x2'].width) + Math.abs(rect.height - WIDGET_SIZES['1x2'].height)
+            
+            const minDistance = Math.min(distance1x1, distance2x1, distance1x2)
+            if (minDistance === distance1x1) closestSize = '1x1'
+            else if (minDistance === distance2x1) closestSize = '2x1'
+            else closestSize = '1x2'
           }
         }
         
-        // For api-metric widgets, restrict to only 2x1 and 1x2
+        // For api-metric widgets, allow 1x1, 2x1 and 1x2
         if (rect.type === 'api-metric') {
-          const validApiMetricSizes = ['2x1', '1x2']
+          const validApiMetricSizes = ['1x1', '2x1', '1x2']
           const currentSize = closestSize
           if (!validApiMetricSizes.includes(currentSize)) {
             // If current size is not valid for api-metrics, pick the closest valid one
+            const distance1x1 = Math.abs(rect.width - WIDGET_SIZES['1x1'].width) + Math.abs(rect.height - WIDGET_SIZES['1x1'].height)
             const distance2x1 = Math.abs(rect.width - WIDGET_SIZES['2x1'].width) + Math.abs(rect.height - WIDGET_SIZES['2x1'].height)
             const distance1x2 = Math.abs(rect.width - WIDGET_SIZES['1x2'].width) + Math.abs(rect.height - WIDGET_SIZES['1x2'].height)
-            closestSize = distance2x1 < distance1x2 ? '2x1' : '1x2'
+            
+            const minDistance = Math.min(distance1x1, distance2x1, distance1x2)
+            if (minDistance === distance1x1) closestSize = '1x1'
+            else if (minDistance === distance2x1) closestSize = '2x1'
+            else closestSize = '1x2'
           }
         }
         
-        // For api-trends widgets, restrict to only 2x1 and 1x2
+        // For api-trends widgets, allow 1x1, 2x1 and 1x2
         if (rect.type === 'api-trends') {
-          const validTrendSizes = ['2x1', '1x2']
+          const validTrendSizes = ['1x1', '2x1', '1x2']
           const currentSize = closestSize
           if (!validTrendSizes.includes(currentSize)) {
             // If current size is not valid for trends, pick the closest valid one
+            const distance1x1 = Math.abs(rect.width - WIDGET_SIZES['1x1'].width) + Math.abs(rect.height - WIDGET_SIZES['1x1'].height)
             const distance2x1 = Math.abs(rect.width - WIDGET_SIZES['2x1'].width) + Math.abs(rect.height - WIDGET_SIZES['2x1'].height)
             const distance1x2 = Math.abs(rect.width - WIDGET_SIZES['1x2'].width) + Math.abs(rect.height - WIDGET_SIZES['1x2'].height)
-            closestSize = distance2x1 < distance1x2 ? '2x1' : '1x2'
+            
+            const minDistance = Math.min(distance1x1, distance2x1, distance1x2)
+            if (minDistance === distance1x1) closestSize = '1x1'
+            else if (minDistance === distance2x1) closestSize = '2x1'
+            else closestSize = '1x2'
+          }
+        }
+        
+        // For api-chart widgets, allow 1x1, 2x1, 1x2, and 2x2
+        if (rect.type === 'api-chart') {
+          const validChartSizes = ['1x1', '2x1', '1x2', '2x2']
+          const currentSize = closestSize
+          if (!validChartSizes.includes(currentSize)) {
+            // If current size is not valid for charts, pick the closest valid one
+            const distance1x1 = Math.abs(rect.width - WIDGET_SIZES['1x1'].width) + Math.abs(rect.height - WIDGET_SIZES['1x1'].height)
+            const distance2x1 = Math.abs(rect.width - WIDGET_SIZES['2x1'].width) + Math.abs(rect.height - WIDGET_SIZES['2x1'].height)
+            const distance1x2 = Math.abs(rect.width - WIDGET_SIZES['1x2'].width) + Math.abs(rect.height - WIDGET_SIZES['1x2'].height)
+            const distance2x2 = Math.abs(rect.width - WIDGET_SIZES['2x2'].width) + Math.abs(rect.height - WIDGET_SIZES['2x2'].height)
+            
+            const minDistance = Math.min(distance1x1, distance2x1, distance1x2, distance2x2)
+            if (minDistance === distance1x1) closestSize = '1x1'
+            else if (minDistance === distance2x1) closestSize = '2x1'
+            else if (minDistance === distance1x2) closestSize = '1x2'
+            else closestSize = '2x2'
           }
         }
         
