@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 
-const ExpirationFilter = ({ onExpirationChange }) => {
-  const [selectedExpiration, setSelectedExpiration] = useState(null); // Default to null to show 'Select'
+const ExpirationFilter = ({ onExpirationChange, selectedExpiration }) => {
+  const [internalSelected, setInternalSelected] = useState(selectedExpiration || null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState('left');
   const dropdownRef = useRef(null);
@@ -13,6 +13,11 @@ const ExpirationFilter = ({ onExpirationChange }) => {
     { id: '90days', label: 'Expiring in 90 days' },
     { id: 'never', label: 'Never expires' }
   ];
+  
+  // Sync internal state with prop changes
+  useEffect(() => {
+    setInternalSelected(selectedExpiration || null);
+  }, [selectedExpiration]);
   
   // Handle clicks outside of the dropdown
   useEffect(() => {
@@ -32,7 +37,7 @@ const ExpirationFilter = ({ onExpirationChange }) => {
   }, [isDropdownOpen]);
   
   const handleChange = (value) => {
-    setSelectedExpiration(value);
+    setInternalSelected(value);
     setIsDropdownOpen(false);
     if (onExpirationChange) {
       onExpirationChange(value);
@@ -60,8 +65,8 @@ const ExpirationFilter = ({ onExpirationChange }) => {
   };
 
   const getSelectedLabel = () => {
-    if (!selectedExpiration) return 'Select';
-    const option = expirationOptions.find(opt => opt.id === selectedExpiration);
+    if (!internalSelected) return 'Select';
+    const option = expirationOptions.find(opt => opt.id === internalSelected);
     return option ? option.label : 'Select';
   };
 
@@ -86,7 +91,7 @@ const ExpirationFilter = ({ onExpirationChange }) => {
                 {expirationOptions.map((option) => (
                   <div 
                     key={option.id} 
-                    className={`data-range-option ${selectedExpiration === option.id ? 'selected' : ''}`}
+                    className={`data-range-option ${internalSelected === option.id ? 'selected' : ''}`}
                     onClick={() => handleChange(option.id)}
                   >
                     {option.label}

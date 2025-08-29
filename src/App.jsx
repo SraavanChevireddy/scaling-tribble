@@ -4,10 +4,7 @@ import { useMouseInteractions } from './hooks/useMouseInteractions'
 import { WIDGET_SIZES, SAMPLE_CHART_DATA, SAMPLE_FUNNEL_DATA } from './constants/widgetConstants'
 import Sidebar from './components/Sidebar'
 import Widget from './components/Widget'
-import DataRangeFilter from './components/DataRangeFilter'
-import WaiverFilter from './components/WaiverFilter'
-import ApplicationFilter from './components/ApplicationFilter'
-import ExpirationFilter from './components/ExpirationFilter'
+import FilterSection from './components/FilterSection'
 import GetStartedDialog from './components/GetStartedDialog'
 import EmptyState from './components/EmptyState'
 import EditableDashboardName from './components/EditableDashboardName'
@@ -21,6 +18,7 @@ function App() {
   const [selectedWaiver, setSelectedWaiver] = useState(null)
   const [selectedApplication, setSelectedApplication] = useState(null)
   const [selectedExpiration, setSelectedExpiration] = useState(null)
+  const [isAnimating, setIsAnimating] = useState(false)
   
   // Check if Get Started dialog should be shown
   useEffect(() => {
@@ -97,6 +95,15 @@ function App() {
     }, 500)
   };
 
+  // Handle filter applied animation
+  const handleFilterApplied = () => {
+    setIsAnimating(true)
+    // Reset animation state after animation completes (2.5 seconds)
+    setTimeout(() => {
+      setIsAnimating(false)
+    }, 2500)
+  };
+
   // Widget actions for sidebar
   const widgetActions = {
     addNewRectangle,
@@ -125,18 +132,19 @@ function App() {
           <h3 className="right-title">Waiver Explorer</h3>
         </div>
         <div className="filter-container">
-          <div className="filters-wrapper">
-            <DataRangeFilter onRangeChange={setSelectedDataRange} />
-            <WaiverFilter onWaiverChange={setSelectedWaiver} />
-            <ApplicationFilter onApplicationChange={setSelectedApplication} />
-            <ExpirationFilter onExpirationChange={setSelectedExpiration} />
-          </div>
+          <FilterSection 
+            onRangeChange={setSelectedDataRange}
+            onWaiverChange={setSelectedWaiver}
+            onApplicationChange={setSelectedApplication}
+            onExpirationChange={setSelectedExpiration}
+            onFilterApplied={handleFilterApplied}
+          />
         </div>
       </div>
       
       <div 
         ref={canvasRef}
-        className="canvas"
+        className={`canvas ${isAnimating ? 'canvas-animating' : ''}`}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}

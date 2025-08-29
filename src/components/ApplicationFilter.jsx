@@ -1,12 +1,17 @@
 import { useState, useRef, useEffect } from 'react';
 import useApplications from '../hooks/useApplications';
 
-const ApplicationFilter = ({ onApplicationChange }) => {
-  const [selectedApplication, setSelectedApplication] = useState(null);
+const ApplicationFilter = ({ onApplicationChange, selectedApplication }) => {
+  const [internalSelected, setInternalSelected] = useState(selectedApplication || null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   
   const { applications, loading, error } = useApplications();
+  
+  // Sync internal state with prop changes
+  useEffect(() => {
+    setInternalSelected(selectedApplication || null);
+  }, [selectedApplication]);
   
   // Handle clicks outside of the dropdown
   useEffect(() => {
@@ -26,7 +31,7 @@ const ApplicationFilter = ({ onApplicationChange }) => {
   }, [isDropdownOpen]);
   
   const handleChange = (value) => {
-    setSelectedApplication(value);
+    setInternalSelected(value);
     setIsDropdownOpen(false);
     if (onApplicationChange) {
       onApplicationChange(value);
@@ -44,7 +49,7 @@ const ApplicationFilter = ({ onApplicationChange }) => {
           <div className="data-range-label">App: </div>
           <div className="data-range-dropdown-container" ref={dropdownRef}>
             <button onClick={toggleDropdown} className="data-range-dropdown-button">
-              {selectedApplication || 'Select'}
+              {internalSelected || 'Select'}
             </button>
             {isDropdownOpen && (
               <div className="data-range-dropdown">
@@ -54,7 +59,7 @@ const ApplicationFilter = ({ onApplicationChange }) => {
                   applications.map((app) => (
                     <div 
                       key={app} 
-                      className={`data-range-option ${selectedApplication === app ? 'selected' : ''}`}
+                      className={`data-range-option ${internalSelected === app ? 'selected' : ''}`}
                       onClick={() => handleChange(app)}
                     >
                       {app}

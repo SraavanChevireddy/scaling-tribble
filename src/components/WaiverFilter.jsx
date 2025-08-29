@@ -1,12 +1,17 @@
 import { useState, useRef, useEffect } from 'react';
 
-const WaiverFilter = ({ onWaiverChange }) => {
-  const [selectedWaiver, setSelectedWaiver] = useState(null); // Default to null to show 'Select'
+const WaiverFilter = ({ onWaiverChange, selectedWaiver }) => {
+  const [internalSelected, setInternalSelected] = useState(selectedWaiver || null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   
   const waiverOptions = ['Root', 'Organisational', 'Manual', 'Auto'];
   
+  // Sync internal state with prop changes
+  useEffect(() => {
+    setInternalSelected(selectedWaiver || null);
+  }, [selectedWaiver]);
+
   // Handle clicks outside of the dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -25,7 +30,7 @@ const WaiverFilter = ({ onWaiverChange }) => {
   }, [isDropdownOpen]);
   
   const handleChange = (value) => {
-    setSelectedWaiver(value);
+    setInternalSelected(value);
     setIsDropdownOpen(false);
     if (onWaiverChange) {
       onWaiverChange(value);
@@ -43,14 +48,14 @@ const WaiverFilter = ({ onWaiverChange }) => {
           <div className="data-range-label">Waiver: </div>
           <div className="data-range-dropdown-container" ref={dropdownRef}>
             <button onClick={toggleDropdown} className="data-range-dropdown-button">
-              {selectedWaiver || 'Select'}
+              {internalSelected || 'Select'}
             </button>
             {isDropdownOpen && (
               <div className="data-range-dropdown">
                 {waiverOptions.map((option) => (
                   <div 
                     key={option} 
-                    className={`data-range-option ${selectedWaiver === option ? 'selected' : ''}`}
+                    className={`data-range-option ${internalSelected === option ? 'selected' : ''}`}
                     onClick={() => handleChange(option)}
                   >
                     {option}
