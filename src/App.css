@@ -552,10 +552,11 @@
 
 /* Trends widget specific styling */
 .trends-value {
-  overflow: hidden !important;
+  overflow: visible !important;
   max-width: 100%;
   box-sizing: border-box;
-  padding: 4px;
+  padding: 2px; /* Reduced padding */
+  min-height: 50px; /* Reduced min-height */
 }
 
 .trends-value span {
@@ -568,9 +569,35 @@
 .metric-expanded .trends-value {
   white-space: normal;
   height: auto;
-  flex-direction: column;
-  align-items: flex-start !important;
-  justify-content: flex-start !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important; /* Changed to flex-start */
+  text-align: center;
+  overflow: visible !important;
+  max-width: 100% !important;
+  min-height: 40px !important; /* Reduced min-height */
+  padding: 1px !important; /* Reduced padding */
+}
+
+/* Enhanced 1x2 layout for trends */
+.metric-vertical .trends-value {
+  white-space: normal;
+  height: auto;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important; /* Changed to flex-start */
+  text-align: center;
+  overflow: visible !important;
+  max-width: 100% !important;
+  min-height: 40px !important; /* Reduced min-height */
+  padding: 1px !important; /* Reduced padding */
+}
+
+/* Left alignment for trend details in 1x2 layout */
+.metric-vertical .trends-value > div:last-child {
+  align-self: flex-start;
+  text-align: left;
+  padding-left: 8px;
 }
 
 .trend-details {
@@ -1258,6 +1285,23 @@
   white-space: nowrap;
   max-width: 100%;
   box-sizing: border-box;
+}
+
+/* Override for trends widgets in compact layout */
+.metric-container.metric-compact .metric-value.trends-value {
+  font-size: 14px;
+  line-height: 1.1;
+  text-align: center;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: none;
+  margin-top: 0;
+  justify-content: center;
+  align-items: center;
+  min-height: 50px; /* Reduced min-height */
+  display: flex;
+  flex-direction: column;
+  gap: 2px; /* Reduced gap */
 }
 
 /* 2x1 - Two Columns (Horizontal - title/subtitle on left, value on right) */
